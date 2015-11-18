@@ -38,7 +38,7 @@ func NewEngine(taskName string) *Engine {
 	e.scheduler = scheduler.NewScheduler()
 	e.downloader = downloader.NewHttpDownloader()
 	e.processer = processer.NewLazyProcesser()
-	e.pipelines = append(e.pipelines, pipeline.NewConsolePipeline())
+	e.pipelines = append(e.pipelines, pipeline.NewConsolePipeline("\t"))
 	return e
 }
 
