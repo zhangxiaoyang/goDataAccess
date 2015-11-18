@@ -11,8 +11,7 @@ type FilePipeline struct {
 }
 
 func NewFilePipeline(file *os.File, splitter string) *FilePipeline {
-	p := &FilePipeline{file: file, splitter: splitter}
-	return p
+	return &FilePipeline{file: file, splitter: splitter}
 }
 
 func (this *FilePipeline) Pipe(items *util.Items) {

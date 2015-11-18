@@ -9,8 +9,7 @@ type Scheduler struct {
 }
 
 func NewScheduler() *Scheduler {
-	s := &Scheduler{queue: make(chan *util.Request, 1024)}
-	return s
+	return &Scheduler{queue: make(chan *util.Request, 1024)}
 }
 
 func (this *Scheduler) Push(req *util.Request) {

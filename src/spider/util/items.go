@@ -5,8 +5,7 @@ type Items struct {
 }
 
 func NewItems() *Items {
-	i := &Items{items: make(map[string]string)}
-	return i
+	return &Items{items: make(map[string]string)}
 }
 
 func (this *Items) Set(key string, value string) {
