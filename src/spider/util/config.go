@@ -11,6 +11,7 @@ type Config struct {
 	DownloadTimeout     time.Duration
 	ConnectionTimeout   time.Duration
 	MaxIdleConnsPerHost int
+	MaxRetryTimes       int
 }
 
 func NewConfig() *Config {

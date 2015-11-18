@@ -5,7 +5,8 @@ type Items struct {
 }
 
 func NewItems() *Items {
-	return (&Items{}).init()
+	i := &Items{items: make(map[string]string)}
+	return i
 }
 
 func (this *Items) Set(key string, value string) {
@@ -21,9 +22,4 @@ func (this *Items) Get(key string, defaultVal string) string {
 
 func (this *Items) GetAll() map[string]string {
 	return this.items
-}
-
-func (this *Items) init() *Items {
-	this.items = make(map[string]string)
-	return this
 }

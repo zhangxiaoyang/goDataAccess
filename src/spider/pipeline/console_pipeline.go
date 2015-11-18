@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"fmt"
 	"spider/util"
 )
 
@@ -11,8 +12,7 @@ func NewConsolePipeline() *ConsolePipeline {
 }
 
 func (this *ConsolePipeline) Pipe(items *util.Items) {
-	innerItems := items.GetAll()
-	for k, v := range innerItems {
-		println(k + "\t" + v)
+	for k, v := range items.GetAll() {
+		fmt.Println(k + "\t" + v)
 	}
 }

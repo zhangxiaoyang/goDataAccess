@@ -13,7 +13,7 @@ func NewHttpDownloader() *HttpDownloader {
 	return &HttpDownloader{}
 }
 
-func (this *HttpDownloader) Download(req *util.Request, config *util.Config) *util.Response {
+func (this *HttpDownloader) Download(req *util.Request, config *util.Config) (*util.Response, error) {
 	client := &http.Client{
 		Timeout: 2 * config.DownloadTimeout,
 		Transport: &http.Transport{
@@ -31,14 +31,14 @@ func (this *HttpDownloader) Download(req *util.Request, config *util.Config) *ut
 
 	resp, err := client.Do(req.Request)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return util.NewResponse(resp, req.Url, body)
+	return util.NewResponse(resp, req.Url, body), nil
 }

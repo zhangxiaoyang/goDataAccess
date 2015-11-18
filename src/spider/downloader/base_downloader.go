@@ -5,5 +5,5 @@ import (
 )
 
 type BaseDownloader interface {
-	Download(*util.Request, *util.Config) *util.Response
+	Download(*util.Request, *util.Config) (*util.Response, error)
 }

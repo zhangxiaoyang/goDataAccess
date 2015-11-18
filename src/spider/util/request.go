@@ -19,5 +19,5 @@ func NewRequest(url string) *Request {
 		}
 	}
 
-	panic("Unimplemented protocol " + url)
+	panic("Unimplemented protocol for handling url: " + url)
 }
