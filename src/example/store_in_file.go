@@ -35,7 +35,7 @@ func (this *MyProcesser) Process(resp *util.Response, y *util.Yield) {
 
 func getUrlsFromFile(fileName string) []string {
 	var urls = []string{}
-	file, _ := os.Open("test.url")
+	file, _ := os.Open(fileName)
 	r := bufio.NewReader(file)
 	for i := 0; i < 10; i++ {
 		line, _ := r.ReadString('\n')
