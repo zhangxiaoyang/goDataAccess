@@ -4,7 +4,7 @@ import (
 	"spider/pipeline"
 	"spider/processer"
 	"spider/scheduler"
-	"spider/util"
+	"spider/common"
 )
 
 type BaseEngine interface {
@@ -14,5 +14,5 @@ type BaseEngine interface {
 	SetPipeline(pipeline.BasePipeline) *BaseEngine
 	SetPipelines([]pipeline.BasePipeline) *BaseEngine
 	SetScheduler(scheduler.BaseScheduler) *BaseEngine
-	SetConfig(*util.Config) *BaseEngine
+	SetConfig(*common.Config) *BaseEngine
 }

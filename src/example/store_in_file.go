@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"spider/engine"
 	"spider/pipeline"
-	"spider/util"
+	"spider/common"
 	"strings"
 	"time"
 )
@@ -18,9 +18,9 @@ func NewMyProcesser() *MyProcesser {
 	return &MyProcesser{}
 }
 
-func (this *MyProcesser) Process(resp *util.Response, y *util.Yield) {
-	y.AddItem(func() *util.Item {
-		item := util.NewItem()
+func (this *MyProcesser) Process(resp *common.Response, y *common.Yield) {
+	y.AddItem(func() *common.Item {
+		item := common.NewItem()
 		item.Set("url", resp.Url)
 		item.Set("title", func() string {
 			m := regexp.MustCompile(`<title>(.*?)</title>`).FindStringSubmatch(resp.Body)

@@ -1,4 +1,4 @@
-package util
+package common
 
 type Item struct {
 	item map[string]string

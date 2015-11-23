@@ -1,12 +1,12 @@
 package scheduler
 
 import (
-	"spider/util"
+	"spider/common"
 )
 
 type BaseScheduler interface {
-	Push(*util.Request)
-	Poll() *util.Request
+	Push(*common.Request)
+	Poll() *common.Request
 	Count() int
 	Close()
 }

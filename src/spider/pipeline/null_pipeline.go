@@ -1,7 +1,7 @@
 package pipeline
 
 import (
-	"spider/util"
+	"spider/common"
 )
 
 type NullPipeline struct{}
@@ -10,5 +10,5 @@ func NewNullPipeline() *NullPipeline {
 	return &NullPipeline{}
 }
 
-func (this *NullPipeline) Pipe(item *util.Item) {
+func (this *NullPipeline) Pipe(item *common.Item) {
 }

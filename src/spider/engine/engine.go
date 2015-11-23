@@ -2,11 +2,11 @@ package engine
 
 import (
 	"crypto/md5"
+	"spider/common"
 	"spider/downloader"
 	"spider/pipeline"
 	"spider/processer"
 	"spider/scheduler"
-	"spider/util"
 	"time"
 )
 
@@ -16,21 +16,14 @@ type Engine struct {
 	downloader downloader.BaseDownloader
 	pipelines  []pipeline.BasePipeline
 	scheduler  scheduler.BaseScheduler
-	config     *util.Config
+	config     *common.Config
 	count      int
 	retryCache map[[md5.Size]byte]int
 }
 
 func NewEngine(taskName string) *Engine {
 	e := &Engine{taskName: taskName}
-	e.config = util.NewConfig()
-	e.config.Concurrency = 2
-	e.config.PollingTime = 200 * time.Millisecond
-	e.config.WaitTime = 200 * time.Millisecond
-	e.config.DownloadTimeout = 2 * time.Minute
-	e.config.ConnectionTimeout = 2 * time.Second
-	e.config.MaxIdleConnsPerHost = 10
-	e.config.MaxRetryTimes = 2
+	e.config = common.NewConfig()
 
 	e.count = 0
 	e.retryCache = make(map[[md5.Size]byte]int)
@@ -43,13 +36,13 @@ func NewEngine(taskName string) *Engine {
 }
 
 func (this *Engine) SetStartUrl(url string) *Engine {
-	this.scheduler.Push(util.NewRequest(url))
+	this.scheduler.Push(common.NewRequest(url))
 	return this
 }
 
 func (this *Engine) SetStartUrls(urls []string) *Engine {
 	for _, url := range urls {
-		this.scheduler.Push(util.NewRequest(url))
+		this.scheduler.Push(common.NewRequest(url))
 	}
 	return this
 }
@@ -80,7 +73,7 @@ func (this *Engine) SetPipeline(pipeline pipeline.BasePipeline) *Engine {
 	return this
 }
 
-func (this *Engine) SetConfig(config *util.Config) *Engine {
+func (this *Engine) SetConfig(config *common.Config) *Engine {
 	this.config = config
 	return this
 }
@@ -104,22 +97,23 @@ func (this *Engine) Start() {
 		}
 
 		req := this.next()
-		go func(req *util.Request) {
+		go func(req *common.Request) {
 			this.process(req)
 		}(req)
 	}
 }
 
-func (this *Engine) process(req *util.Request) {
+func (this *Engine) process(req *common.Request) {
 	for _, pipe := range this.pipelines {
 		resp, err := this.downloader.Download(req, this.config)
 
 		if err != nil && this.config.MaxRetryTimes > 0 {
+			println(err)
 			this.retry(req)
 			continue
 		}
 
-		var y = util.NewYield()
+		var y = common.NewYield()
 		this.processer.Process(resp, y)
 		for _, r := range y.GetAllRequests() {
 			this.scheduler.Push(r)
@@ -132,7 +126,7 @@ func (this *Engine) process(req *util.Request) {
 	this.count--
 }
 
-func (this *Engine) retry(req *util.Request) {
+func (this *Engine) retry(req *common.Request) {
 	h := md5.Sum([]byte(req.Url))
 	if _, ok := this.retryCache[h]; ok {
 		this.retryCache[h]++
@@ -164,7 +158,7 @@ func (this *Engine) isEmpty() bool {
 	return false
 }
 
-func (this *Engine) next() *util.Request {
+func (this *Engine) next() *common.Request {
 	this.count++
 	return this.scheduler.Poll()
 }

@@ -1,22 +1,22 @@
 package scheduler
 
 import (
-	"spider/util"
+	"spider/common"
 )
 
 type Scheduler struct {
-	queue chan *util.Request
+	queue chan *common.Request
 }
 
 func NewScheduler() *Scheduler {
-	return &Scheduler{queue: make(chan *util.Request, 1024)}
+	return &Scheduler{queue: make(chan *common.Request, 1024)}
 }
 
-func (this *Scheduler) Push(req *util.Request) {
+func (this *Scheduler) Push(req *common.Request) {
 	this.queue <- req
 }
 
-func (this *Scheduler) Poll() *util.Request {
+func (this *Scheduler) Poll() *common.Request {
 	if len(this.queue) == 0 {
 		return nil
 	}

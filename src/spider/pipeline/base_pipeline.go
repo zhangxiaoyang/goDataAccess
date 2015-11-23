@@ -1,9 +1,9 @@
 package pipeline
 
 import (
-	"spider/util"
+	"spider/common"
 )
 
 type BasePipeline interface {
-	Pipe(*util.Item)
+	Pipe(*common.Item)
 }

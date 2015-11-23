@@ -2,7 +2,7 @@ package pipeline
 
 import (
 	"os"
-	"spider/util"
+	"spider/common"
 )
 
 type FilePipeline struct {
@@ -14,7 +14,7 @@ func NewFilePipeline(file *os.File, splitter string) *FilePipeline {
 	return &FilePipeline{file: file, splitter: splitter}
 }
 
-func (this *FilePipeline) Pipe(item *util.Item) {
+func (this *FilePipeline) Pipe(item *common.Item) {
 	for k, v := range item.GetAll() {
 		this.file.WriteString(k + this.splitter + v + "\n")
 	}

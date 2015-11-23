@@ -1,9 +1,9 @@
 package downloader
 
 import (
-	"spider/util"
+	"spider/common"
 )
 
 type BaseDownloader interface {
-	Download(*util.Request, *util.Config) (*util.Response, error)
+	Download(*common.Request, *common.Config) (*common.Response, error)
 }

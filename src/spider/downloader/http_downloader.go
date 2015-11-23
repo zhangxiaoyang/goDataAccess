@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"spider/util"
+	"spider/common"
 )
 
 type HttpDownloader struct{}
@@ -13,7 +13,7 @@ func NewHttpDownloader() *HttpDownloader {
 	return &HttpDownloader{}
 }
 
-func (this *HttpDownloader) Download(req *util.Request, config *util.Config) (*util.Response, error) {
+func (this *HttpDownloader) Download(req *common.Request, config *common.Config) (*common.Response, error) {
 	client := &http.Client{
 		Timeout: 2 * config.DownloadTimeout,
 		Transport: &http.Transport{
@@ -40,5 +40,5 @@ func (this *HttpDownloader) Download(req *util.Request, config *util.Config) (*u
 		return nil, err
 	}
 
-	return util.NewResponse(resp, req.Url, body), nil
+	return common.NewResponse(resp, req.Url, body), nil
 }

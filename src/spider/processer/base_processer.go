@@ -1,9 +1,9 @@
 package processer
 
 import (
-	"spider/util"
+	"spider/common"
 )
 
 type BaseProcesser interface {
-	Process(*util.Response, *util.Yield)
+	Process(*common.Response, *common.Yield)
 }

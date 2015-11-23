@@ -5,7 +5,7 @@ import (
 	"os"
 	"spider/engine"
 	"spider/pipeline"
-	"spider/util"
+	"spider/common"
 	"strings"
 	"time"
 )
@@ -18,7 +18,7 @@ func NewMyProcesser() *MyProcesser {
 	return &MyProcesser{}
 }
 
-func (this *MyProcesser) Process(resp *util.Response, y *util.Yield) {
+func (this *MyProcesser) Process(resp *common.Response, y *common.Yield) {
 	crawledCount++
 	t := int(time.Now().Sub(startingTime).Seconds())
 	if t > 0 {
