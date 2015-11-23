@@ -41,12 +41,14 @@ func getUrlsFromFile(fileName string) []string {
 	}
 	return urls
 }
+
 func main() {
 	fmt.Println(time.Now())
+
 	file, _ := os.Create("output.txt")
 	defer file.Close()
 
-	engine.NewEngine("crawl_and_store_file_output.txt").
+	engine.NewEngine("crawl_and_store_in_file").
 		SetPipeline(pipeline.NewFilePipeline(file, "\t")).
 		SetProcesser(NewMyProcesser()).
 		SetStartUrls(getUrlsFromFile("test.url")).
