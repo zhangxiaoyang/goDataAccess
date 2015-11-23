@@ -43,13 +43,11 @@ func NewEngine(taskName string) *Engine {
 }
 
 func (this *Engine) SetStartUrl(url string) *Engine {
-	this.scheduler.Clear()
 	this.scheduler.Push(util.NewRequest(url))
 	return this
 }
 
 func (this *Engine) SetStartUrls(urls []string) *Engine {
-	this.scheduler.Clear()
 	for _, url := range urls {
 		this.scheduler.Push(util.NewRequest(url))
 	}
@@ -88,6 +86,7 @@ func (this *Engine) SetConfig(config *util.Config) *Engine {
 }
 
 func (this *Engine) Start() {
+	defer this.scheduler.Close()
 	for {
 		if this.isDone() {
 			break
