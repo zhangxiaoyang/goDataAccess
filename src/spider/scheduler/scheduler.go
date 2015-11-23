@@ -26,3 +26,9 @@ func (this *Scheduler) Poll() *util.Request {
 func (this *Scheduler) Count() int {
 	return len(this.queue)
 }
+
+func (this *Scheduler) Clear() {
+	for len(this.queue) > 0 {
+		<-this.queue
+	}
+}

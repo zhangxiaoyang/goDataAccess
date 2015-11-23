@@ -5,5 +5,5 @@ import (
 )
 
 type BaseProcesser interface {
-	Process(*util.Response) *util.Items
+	Process(*util.Response, *util.Yield)
 }

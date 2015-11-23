@@ -5,5 +5,5 @@ import (
 )
 
 type BasePipeline interface {
-	Pipe(*util.Items)
+	Pipe(*util.Item)
 }

@@ -18,17 +18,19 @@ func NewMyProcesser() *MyProcesser {
 	return &MyProcesser{}
 }
 
-func (this *MyProcesser) Process(resp *util.Response) *util.Items {
-	items := util.NewItems()
-	items.Set("url", resp.Url)
-	items.Set("title", func(s string) string {
-		m := regexp.MustCompile(`<title>(.*?)</title>`).FindStringSubmatch(s)
-		if len(m) > 0 {
-			return m[0]
-		}
-		return ""
-	}(resp.Body))
-	return items
+func (this *MyProcesser) Process(resp *util.Response, y *util.Yield) {
+	y.AddItem(func() *util.Item {
+		item := util.NewItem()
+		item.Set("url", resp.Url)
+		item.Set("title", func() string {
+			m := regexp.MustCompile(`<title>(.*?)</title>`).FindStringSubmatch(resp.Body)
+			if len(m) > 0 {
+				return m[1]
+			}
+			return ""
+		}())
+		return item
+	}())
 }
 
 func getUrlsFromFile(fileName string) []string {

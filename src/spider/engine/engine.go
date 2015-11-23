@@ -42,10 +42,27 @@ func NewEngine(taskName string) *Engine {
 	return e
 }
 
+func (this *Engine) SetStartUrl(url string) *Engine {
+	this.scheduler.Clear()
+	this.scheduler.Push(util.NewRequest(url))
+	return this
+}
+
 func (this *Engine) SetStartUrls(urls []string) *Engine {
+	this.scheduler.Clear()
 	for _, url := range urls {
 		this.scheduler.Push(util.NewRequest(url))
 	}
+	return this
+}
+
+func (this *Engine) SetScheduler(scheduler scheduler.BaseScheduler) *Engine {
+	this.scheduler = scheduler
+	return this
+}
+
+func (this *Engine) SetDownloader(downloader downloader.BaseDownloader) *Engine {
+	this.downloader = downloader
 	return this
 }
 
@@ -62,11 +79,6 @@ func (this *Engine) SetPipelines(pipelines []pipeline.BasePipeline) *Engine {
 func (this *Engine) SetPipeline(pipeline pipeline.BasePipeline) *Engine {
 	this.pipelines = this.pipelines[:0]
 	this.pipelines = append(this.pipelines, pipeline)
-	return this
-}
-
-func (this *Engine) SetScheduler(scheduler scheduler.BaseScheduler) *Engine {
-	this.scheduler = scheduler
 	return this
 }
 
@@ -108,9 +120,13 @@ func (this *Engine) process(req *util.Request) {
 			continue
 		}
 
-		items := this.processer.Process(resp)
-		if items != nil {
-			pipe.Pipe(items)
+		var y = util.NewYield()
+		this.processer.Process(resp, y)
+		for _, r := range y.GetAllRequests() {
+			this.scheduler.Push(r)
+		}
+		for _, i := range y.GetAllItems() {
+			pipe.Pipe(i)
 		}
 	}
 
