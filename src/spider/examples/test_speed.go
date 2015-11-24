@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"os"
 	"spider/common"
-	"spider/engine"
-	"spider/pipeline"
+	"spider/core/engine"
+	"spider/core/pipeline"
 	"strings"
 	"time"
 )

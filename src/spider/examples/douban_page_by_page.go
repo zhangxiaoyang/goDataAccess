@@ -2,9 +2,9 @@ package main
 
 import (
 	"regexp"
-	"spider/engine"
-	"spider/pipeline"
 	"spider/common"
+	"spider/core/engine"
+	"spider/core/pipeline"
 )
 
 type MyProcesser struct {

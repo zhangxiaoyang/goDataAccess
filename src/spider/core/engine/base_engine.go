@@ -1,10 +1,10 @@
 package engine
 
 import (
-	"spider/pipeline"
-	"spider/processer"
-	"spider/scheduler"
 	"spider/common"
+	"spider/core/pipeline"
+	"spider/core/processer"
+	"spider/core/scheduler"
 )
 
 type BaseEngine interface {

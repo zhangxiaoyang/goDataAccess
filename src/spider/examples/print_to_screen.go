@@ -1,7 +1,7 @@
 package main
 
 import (
-	"spider/engine"
+	"spider/core/engine"
 )
 
 func main() {

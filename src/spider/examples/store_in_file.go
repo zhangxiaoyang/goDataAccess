@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"spider/engine"
-	"spider/pipeline"
 	"spider/common"
+	"spider/core/engine"
+	"spider/core/pipeline"
 	"strings"
 	"time"
 )

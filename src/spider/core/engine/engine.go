@@ -3,10 +3,10 @@ package engine
 import (
 	"crypto/md5"
 	"spider/common"
-	"spider/downloader"
-	"spider/pipeline"
-	"spider/processer"
-	"spider/scheduler"
+	"spider/core/downloader"
+	"spider/core/pipeline"
+	"spider/core/processer"
+	"spider/core/scheduler"
 	"time"
 )
 
