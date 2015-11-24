@@ -3,9 +3,9 @@ package main
 import (
 	"bufio"
 	"os"
+	"spider/common"
 	"spider/engine"
 	"spider/pipeline"
-	"spider/common"
 	"strings"
 	"time"
 )
@@ -45,5 +45,6 @@ func main() {
 		SetStartUrls(getUrlsFromFile("/home/zhangyang/baidubaike.url")).
 		SetPipeline(pipeline.NewNullPipeline()).
 		SetProcesser(NewMyProcesser()).
+		SetConfig(common.NewConfig().SetConcurrency(10)).
 		Start()
 }

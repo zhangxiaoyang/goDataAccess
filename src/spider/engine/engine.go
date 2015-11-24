@@ -79,16 +79,15 @@ func (this *Engine) SetConfig(config *common.Config) *Engine {
 }
 
 func (this *Engine) Start() {
-	defer this.scheduler.Close()
 	for {
 		if this.isDone() {
 			break
 		} else {
-			time.Sleep(this.config.WaitTime)
+			time.Sleep(this.config.GetWaitTime())
 		}
 
 		if this.isFull() {
-			time.Sleep(this.config.PollingTime)
+			time.Sleep(this.config.GetPollingTime())
 			continue
 		}
 
@@ -107,8 +106,7 @@ func (this *Engine) process(req *common.Request) {
 	for _, pipe := range this.pipelines {
 		resp, err := this.downloader.Download(req, this.config)
 
-		if err != nil && this.config.MaxRetryTimes > 0 {
-			println(err)
+		if err != nil && this.config.GetMaxRetryTimes() > 0 {
 			this.retry(req)
 			continue
 		}
@@ -133,7 +131,7 @@ func (this *Engine) retry(req *common.Request) {
 	} else {
 		this.retryCache[h] = 1
 	}
-	if this.retryCache[h] <= this.config.MaxRetryTimes {
+	if this.retryCache[h] <= this.config.GetMaxRetryTimes() {
 		this.scheduler.Push(req)
 	} else {
 		delete(this.retryCache, h)
@@ -145,7 +143,7 @@ func (this *Engine) isDone() bool {
 }
 
 func (this *Engine) isFull() bool {
-	if this.count < this.config.Concurrency {
+	if this.count < this.config.GetConcurrency() {
 		return false
 	}
 	return true

@@ -15,17 +15,17 @@ func NewHttpDownloader() *HttpDownloader {
 
 func (this *HttpDownloader) Download(req *common.Request, config *common.Config) (*common.Response, error) {
 	client := &http.Client{
-		Timeout: 2 * config.DownloadTimeout,
+		Timeout: 2 * config.GetDownloadTimeout(),
 		Transport: &http.Transport{
 			Dial: func(netw, addr string) (net.Conn, error) {
-				c, err := net.DialTimeout(netw, addr, config.ConnectionTimeout)
+				c, err := net.DialTimeout(netw, addr, config.GetConnectionTimeout())
 				if err != nil {
 					return nil, err
 				}
 				return c, nil
 			},
-			ResponseHeaderTimeout: config.DownloadTimeout,
-			MaxIdleConnsPerHost:   config.MaxIdleConnsPerHost,
+			ResponseHeaderTimeout: config.GetDownloadTimeout(),
+			MaxIdleConnsPerHost:   config.GetMaxIdleConnsPerHost(),
 		},
 	}
 
