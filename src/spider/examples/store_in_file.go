@@ -50,7 +50,7 @@ func main() {
 	file, _ := os.Create("output.txt")
 	defer file.Close()
 
-	engine.NewEngine("crawl_and_store_in_file").
+	engine.NewEngine("store_in_file").
 		SetPipeline(pipeline.NewFilePipeline(file, "\t")).
 		SetProcesser(NewMyProcesser()).
 		SetStartUrls(getUrlsFromFile("test.url")).

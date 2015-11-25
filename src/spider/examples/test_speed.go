@@ -1,12 +1,10 @@
 package main
 
 import (
-	"bufio"
-	"os"
+	"fmt"
 	"spider/common"
 	"spider/core/engine"
 	"spider/core/pipeline"
-	"strings"
 	"time"
 )
 
@@ -18,33 +16,36 @@ func NewMyProcesser() *MyProcesser {
 	return &MyProcesser{}
 }
 
-func (this *MyProcesser) Process(resp *common.Response, y *common.Yield) {
-	crawledCount++
-	t := int(time.Now().Sub(startingTime).Seconds())
-	if t > 0 {
-		println(crawledCount / t)
-	}
-}
-
 var startingTime = time.Now()
 var crawledCount = 0
 
-func getUrlsFromFile(fileName string) []string {
+func (this *MyProcesser) Process(resp *common.Response, y *common.Yield) {
+	crawledCount++
+	t := float64(time.Now().Sub(startingTime).Minutes())
+	if t > 0 {
+		fmt.Printf("%1.0f pages/min\n", float64(crawledCount)/t)
+	}
+}
+
+func genUrls() []string {
 	var urls = []string{}
-	file, _ := os.Open(fileName)
-	r := bufio.NewReader(file)
 	for i := 0; i < 1000; i++ {
-		line, _ := r.ReadString('\n')
-		urls = append(urls, strings.TrimSpace(line))
+		u := fmt.Sprintf("http://baike.baidu.com/view/%d.htm", i)
+		urls = append(urls, u)
 	}
 	return urls
 }
 
 func main() {
+	config := common.NewConfig().
+		SetConcurrency(1000).
+		SetWaitTime(10 * time.Millisecond).
+		SetPollingTime(10 * time.Millisecond)
+
 	engine.NewEngine("test_speed").
-		SetStartUrls(getUrlsFromFile("/home/zhangyang/baidubaike.url")).
+		SetStartUrls(genUrls()).
 		SetPipeline(pipeline.NewNullPipeline()).
 		SetProcesser(NewMyProcesser()).
-		SetConfig(common.NewConfig().SetConcurrency(10)).
+		SetConfig(config).
 		Start()
 }

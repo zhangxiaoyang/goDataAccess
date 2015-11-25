@@ -11,21 +11,21 @@ import (
 )
 
 type Engine struct {
-	taskName   string
-	processer  processer.BaseProcesser
-	downloader downloader.BaseDownloader
-	pipelines  []pipeline.BasePipeline
-	scheduler  scheduler.BaseScheduler
-	config     *common.Config
-	count      int
-	retryCache map[[md5.Size]byte]int
+	taskName        string
+	processer       processer.BaseProcesser
+	downloader      downloader.BaseDownloader
+	pipelines       []pipeline.BasePipeline
+	scheduler       scheduler.BaseScheduler
+	config          *common.Config
+	resourceManager *common.ResourceManager
+	retryCache      map[[md5.Size]byte]int
 }
 
 func NewEngine(taskName string) *Engine {
 	e := &Engine{taskName: taskName}
 	e.config = common.NewConfig()
 
-	e.count = 0
+	e.resourceManager = common.NewResourceManager(e.config.GetConcurrency())
 	e.retryCache = make(map[[md5.Size]byte]int)
 
 	e.scheduler = scheduler.NewScheduler()
@@ -75,6 +75,7 @@ func (this *Engine) SetPipeline(pipeline pipeline.BasePipeline) *Engine {
 
 func (this *Engine) SetConfig(config *common.Config) *Engine {
 	this.config = config
+	this.resourceManager = common.NewResourceManager(config.GetConcurrency())
 	return this
 }
 
@@ -86,18 +87,19 @@ func (this *Engine) Start() {
 			time.Sleep(this.config.GetWaitTime())
 		}
 
-		if this.isFull() {
-			time.Sleep(this.config.GetPollingTime())
-			continue
-		}
-
 		if this.isEmpty() {
 			continue
 		}
 
-		req := this.next()
+		if ok := this.resourceManager.Alloc(); !ok {
+			time.Sleep(this.config.GetPollingTime())
+			continue
+		}
+
+		req := this.scheduler.Poll()
 		go func(req *common.Request) {
 			this.process(req)
+			this.resourceManager.Dealloc()
 		}(req)
 	}
 }
@@ -120,8 +122,6 @@ func (this *Engine) process(req *common.Request) {
 			pipe.Pipe(i)
 		}
 	}
-
-	this.count--
 }
 
 func (this *Engine) retry(req *common.Request) {
@@ -139,14 +139,7 @@ func (this *Engine) retry(req *common.Request) {
 }
 
 func (this *Engine) isDone() bool {
-	return this.scheduler.Count() == 0 && this.count == 0
-}
-
-func (this *Engine) isFull() bool {
-	if this.count < this.config.GetConcurrency() {
-		return false
-	}
-	return true
+	return this.scheduler.Count() == 0 && this.resourceManager.Count() == 0
 }
 
 func (this *Engine) isEmpty() bool {
@@ -154,9 +147,4 @@ func (this *Engine) isEmpty() bool {
 		return true
 	}
 	return false
-}
-
-func (this *Engine) next() *common.Request {
-	this.count++
-	return this.scheduler.Poll()
 }
