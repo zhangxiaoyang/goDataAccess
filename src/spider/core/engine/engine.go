@@ -7,15 +7,17 @@ import (
 	"spider/core/pipeline"
 	"spider/core/processer"
 	"spider/core/scheduler"
+	"spider/plugin"
 	"time"
 )
 
 type Engine struct {
 	taskName        string
-	processer       processer.BaseProcesser
-	downloader      downloader.BaseDownloader
-	pipelines       []pipeline.BasePipeline
 	scheduler       scheduler.BaseScheduler
+	downloader      downloader.BaseDownloader
+	processer       processer.BaseProcesser
+	pipelines       []pipeline.BasePipeline
+	plugins         map[plugin.PluginType][]plugin.BasePlugin
 	config          *common.Config
 	resourceManager *common.ResourceManager
 	retryCache      map[[md5.Size]byte]int
@@ -32,17 +34,22 @@ func NewEngine(taskName string) *Engine {
 	e.downloader = downloader.NewHttpDownloader()
 	e.processer = processer.NewLazyProcesser()
 	e.pipelines = append(e.pipelines, pipeline.NewConsolePipeline("\t"))
+	e.plugins = make(map[plugin.PluginType][]plugin.BasePlugin)
 	return e
 }
 
 func (this *Engine) SetStartUrl(url string) *Engine {
-	this.scheduler.Push(common.NewRequest(url))
+	r := common.NewRequest(url)
+	this.hook(plugin.PreSchedulerType, r)
+	this.scheduler.Push(r)
 	return this
 }
 
 func (this *Engine) SetStartUrls(urls []string) *Engine {
 	for _, url := range urls {
-		this.scheduler.Push(common.NewRequest(url))
+		r := common.NewRequest(url)
+		this.hook(plugin.PreSchedulerType, r)
+		this.scheduler.Push(r)
 	}
 	return this
 }
@@ -106,6 +113,7 @@ func (this *Engine) Start() {
 
 func (this *Engine) process(req *common.Request) {
 	for _, pipe := range this.pipelines {
+		this.hook(plugin.PreDownloaderType, req)
 		resp, err := this.downloader.Download(req, this.config)
 
 		if err != nil && this.config.GetMaxRetryTimes() > 0 {
@@ -114,11 +122,16 @@ func (this *Engine) process(req *common.Request) {
 		}
 
 		var y = common.NewYield()
+		this.hook(plugin.PreProcesserType, req)
 		this.processer.Process(resp, y)
 		for _, r := range y.GetAllRequests() {
+			this.hook(plugin.PreSchedulerType, r)
 			this.scheduler.Push(r)
 		}
-		for _, i := range y.GetAllItems() {
+
+		items := y.GetAllItems()
+		this.hook(plugin.PrePipelineType, items)
+		for _, i := range items {
 			pipe.Pipe(i)
 		}
 	}
@@ -132,6 +145,7 @@ func (this *Engine) retry(req *common.Request) {
 		this.retryCache[h] = 1
 	}
 	if this.retryCache[h] <= this.config.GetMaxRetryTimes() {
+		this.hook(plugin.PreSchedulerType, req)
 		this.scheduler.Push(req)
 	} else {
 		delete(this.retryCache, h)
@@ -147,4 +161,15 @@ func (this *Engine) isEmpty() bool {
 		return true
 	}
 	return false
+}
+
+func (this *Engine) hook(pluginType plugin.PluginType, params ...interface{}) {
+	for _, p := range this.plugins[pluginType] {
+		p.Do(params...)
+	}
+}
+
+func (this *Engine) AddPlugin(p plugin.BasePlugin) *Engine {
+	this.plugins[p.GetPluginType()] = append(this.plugins[p.GetPluginType()], p)
+	return this
 }
