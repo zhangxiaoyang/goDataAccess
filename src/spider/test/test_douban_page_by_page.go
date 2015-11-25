@@ -40,7 +40,7 @@ func (this *MyProcesser) Process(resp *common.Response, y *common.Yield) {
 func main() {
 	var baseUrl = "http://www.douban.com/group/explore/"
 
-	engine.NewEngine("douban_page_by_page").
+	engine.NewEngine("test_douban_page_by_page").
 		SetStartUrl(baseUrl).
 		SetPipeline(pipeline.NewConsolePipeline("\t")).
 		SetProcesser(NewMyProcesser(baseUrl)).
