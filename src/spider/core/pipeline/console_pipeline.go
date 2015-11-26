@@ -13,8 +13,10 @@ func NewConsolePipeline(splitter string) *ConsolePipeline {
 	return &ConsolePipeline{splitter: splitter}
 }
 
-func (this *ConsolePipeline) Pipe(item *common.Item) {
-	for k, v := range item.GetAll() {
-		fmt.Println(k + this.splitter + v)
+func (this *ConsolePipeline) Pipe(items []*common.Item) {
+	for _, item := range items {
+		for k, v := range item.GetAll() {
+			fmt.Println(k + this.splitter + v)
+		}
 	}
 }

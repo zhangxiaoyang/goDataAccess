@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"spider/common"
 	"spider/core/engine"
-	"spider/core/pipeline"
+	//"spider/core/pipeline"
 	"time"
 )
 
@@ -44,8 +44,8 @@ func main() {
 
 	engine.NewEngine("test_speed").
 		SetStartUrls(genUrls()).
-		SetPipeline(pipeline.NewNullPipeline()).
 		SetProcesser(NewMyProcesser()).
+		//AddPipeline(pipeline.NewConsolePipeline("\t")).
 		SetConfig(config).
 		Start()
 }

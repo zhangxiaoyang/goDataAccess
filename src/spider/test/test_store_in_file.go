@@ -51,7 +51,7 @@ func main() {
 	defer file.Close()
 
 	engine.NewEngine("test_store_in_file").
-		SetPipeline(pipeline.NewFilePipeline(file, "\t")).
+		AddPipeline(pipeline.NewFilePipeline(file, "\t")).
 		SetProcesser(NewMyProcesser()).
 		SetStartUrls(getUrlsFromFile("test.url")).
 		Start()

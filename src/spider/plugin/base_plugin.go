@@ -10,6 +10,5 @@ const (
 )
 
 type BasePlugin interface {
-	Do(...interface{})
-	GetPluginType() PluginType
+	Do(PluginType, ...interface{})
 }

@@ -42,7 +42,7 @@ func main() {
 
 	engine.NewEngine("test_douban_page_by_page").
 		SetStartUrl(baseUrl).
-		SetPipeline(pipeline.NewConsolePipeline("\t")).
+		AddPipeline(pipeline.NewConsolePipeline("\t")).
 		SetProcesser(NewMyProcesser(baseUrl)).
 		Start()
 }
