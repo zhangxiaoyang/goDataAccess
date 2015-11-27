@@ -1,5 +1,5 @@
 {
-    "task_name": "baidubaike",
+    "task_name": "crawl_baidubaike_with_quickengine",
     "base_url": "http://baike.baidu.com",
     "max_depth": 5,
     "start_urls": [
@@ -22,6 +22,6 @@
         "trim_func": "trim_html_tags"
     },
     "merge": true,
-    "output_file": "run_spider_from_json_output.txt",
+    "output_file": "crawl_baidubaike_with_quickengine_output.txt",
     "concurrency": 200
 }

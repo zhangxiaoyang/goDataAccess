@@ -1,0 +1,28 @@
+{
+    "task_name": "baidubaike",
+    "base_url": "http://www.kuaidaili.com/free/inha",
+    "max_depth": 5,
+    "start_urls": [
+        "http://www.kuaidaili.com/free/inha/1/",
+        "http://www.kuaidaili.com/free/inha/2/",
+        "http://www.kuaidaili.com/free/inha/3/",
+        "http://www.kuaidaili.com/free/inha/4/",
+        "http://www.kuaidaili.com/free/inha/5/",
+        "http://www.kuaidaili.com/free/inha/6/",
+        "http://www.kuaidaili.com/free/inha/7/",
+        "http://www.kuaidaili.com/free/inha/8/",
+        "http://www.kuaidaili.com/free/inha/9/",
+        "http://www.kuaidaili.com/free/inha/10/"
+    ],
+    "items": {
+        "scope_rule": "(?s)<tr>.*?<td>.*?</tr>",
+        "rules": {
+            "ip": "(?s)<td>(\\d+\\.\\d+\\.\\d+\\.\\d+)</td>",
+            "port": "(?s)<td>(\\d+)</td>"
+        },
+        "trim_func": "trim_html_tags"
+    },
+    "merge": false,
+    "output_file": "agents.db",
+    "concurrency": 200
+}
