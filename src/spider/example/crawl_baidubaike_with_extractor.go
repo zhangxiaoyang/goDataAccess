@@ -18,8 +18,8 @@ func NewMyProcesser() *MyProcesser {
 
 func (this *MyProcesser) Process(resp *common.Response, y *common.Yield) {
 	items := extractor.NewExtractor().
-		SetItemScopeRule(`(?s)<dt class="basicInfo-item name">.*?</dd>`).
-		SetItemRules(map[string]string{
+		SetScopeRule(`(?s)<dt class="basicInfo-item name">.*?</dd>`).
+		SetRules(map[string]string{
 		"key":   `(?s)name">(.*?)</dt>`,
 		"value": `(?s)value">(.*?)</dd>`,
 	}).
