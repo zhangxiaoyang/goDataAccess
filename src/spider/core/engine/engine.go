@@ -129,7 +129,7 @@ func (this *Engine) process(req *common.Request) {
 	for _, p := range this.pipelines {
 		items := y.GetAllItems()
 		this.hook(plugin.PrePipelineType, items)
-		p.Pipe(items)
+		p.Pipe(items, y.GetMerge())
 	}
 }
 

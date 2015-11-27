@@ -16,6 +16,7 @@ type Rules struct {
 	Rules     map[string]string `json:"rules"`
 	TrimFunc  string            `json:"trim_func"`
 }
+
 type Spider struct {
 	TaskName   string   `json:"task_name"`
 	BaseUrl    string   `json:"base_url"`
@@ -23,6 +24,7 @@ type Spider struct {
 	StartUrls  []string `json:"start_urls"`
 	Items      Rules    `json:"items"`
 	Urls       Rules    `json:"urls"`
+	Merge      bool     `json:"merge"`
 	OutputFile string   `json:"output_file"`
 }
 
@@ -87,6 +89,7 @@ func (this *MyProcesser) Process(resp *common.Response, y *common.Yield) {
 	this.depth++
 	this.processItems(resp, y)
 	this.processRequests(resp, y)
+	y.SetMerge(this.spider.Merge)
 }
 
 func NewSpider(fileName string) *Spider {

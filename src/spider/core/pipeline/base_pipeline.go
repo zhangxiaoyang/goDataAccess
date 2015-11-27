@@ -5,5 +5,5 @@ import (
 )
 
 type BasePipeline interface {
-	Pipe([]*common.Item)
+	Pipe([]*common.Item, bool)
 }

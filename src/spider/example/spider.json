@@ -1,7 +1,7 @@
 {
     "task_name": "baidubaike",
     "base_url": "http://baike.baidu.com",
-    "max_depth": 10,
+    "max_depth": 5,
     "start_urls": [
         "http://baike.baidu.com/view/3179.htm",
         "http://baike.baidu.com/subview/2632/19244814.htm"
@@ -21,5 +21,6 @@
         },
         "trim_func": "trim_html_tags"
     },
+    "merge": true,
     "output_file": "run_spider_from_json_output.txt"
 }
