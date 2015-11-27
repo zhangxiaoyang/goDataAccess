@@ -8,28 +8,36 @@ import (
 	"spider/core/engine"
 	"spider/core/extractor"
 	"spider/core/pipeline"
+	"strings"
 )
 
+type Rules struct {
+	ScopeRule string            `json:"scope_rule"`
+	Rules     map[string]string `json:"rules"`
+	TrimFunc  string            `json:"trim_func"`
+}
 type Spider struct {
-	TaskName      string            `json:"task_name"`
-	StartUrls     []string          `json:"start_urls"`
-	ItemScopeRule string            `json:"item_scope_rule"`
-	ItemRules     map[string]string `json:"item_rules"`
-	TrimFunc      string            `json:"trim_func"`
-	OutputFile    string            `json:"output_file"`
+	TaskName   string   `json:"task_name"`
+	BaseUrl    string   `json:"base_url"`
+	MaxDepth   int      `json:"max_depth"`
+	StartUrls  []string `json:"start_urls"`
+	Items      Rules    `json:"items"`
+	Urls       Rules    `json:"urls"`
+	OutputFile string   `json:"output_file"`
 }
 
 type MyProcesser struct {
 	spider *Spider
+	depth  int
 }
 
 func NewMyProcesser(spider *Spider) *MyProcesser {
-	return &MyProcesser{spider: spider}
+	return &MyProcesser{spider: spider, depth: 0}
 }
 
-func (this *MyProcesser) Process(resp *common.Response, y *common.Yield) {
+func (this *MyProcesser) processItems(resp *common.Response, y *common.Yield) {
 	var trimFunc extractor.TrimFunc
-	switch this.spider.TrimFunc {
+	switch this.spider.Items.TrimFunc {
 	case "trim_html_tags":
 		trimFunc = extractor.TrimHtmlTags
 	case "trim_blank":
@@ -37,14 +45,48 @@ func (this *MyProcesser) Process(resp *common.Response, y *common.Yield) {
 	}
 
 	items := extractor.NewExtractor().
-		SetItemScopeRule(this.spider.ItemScopeRule).
-		SetItemRules(this.spider.ItemRules).
+		SetScopeRule(this.spider.Items.ScopeRule).
+		SetRules(this.spider.Items.Rules).
 		SetTrimFunc(trimFunc).
 		Extract(resp.Body)
-
 	for _, item := range items {
 		y.AddItem(item)
 	}
+}
+
+func (this *MyProcesser) processRequests(resp *common.Response, y *common.Yield) {
+	var trimFunc extractor.TrimFunc
+	switch this.spider.Urls.TrimFunc {
+	case "trim_html_tags":
+		trimFunc = extractor.TrimHtmlTags
+	case "trim_blank":
+		trimFunc = extractor.TrimBlank
+	}
+
+	items := extractor.NewExtractor().
+		SetScopeRule(this.spider.Urls.ScopeRule).
+		SetRules(this.spider.Urls.Rules).
+		SetTrimFunc(trimFunc).
+		Extract(resp.Body)
+	for _, item := range items {
+		for _, url := range item.GetAll() {
+			if strings.HasPrefix(url, "http://") {
+				y.AddRequest(common.NewRequest(url))
+			} else {
+				y.AddRequest(common.NewRequest(this.spider.BaseUrl + url))
+			}
+		}
+	}
+}
+
+func (this *MyProcesser) Process(resp *common.Response, y *common.Yield) {
+	if this.depth > this.spider.MaxDepth {
+		return
+	}
+
+	this.depth++
+	this.processItems(resp, y)
+	this.processRequests(resp, y)
 }
 
 func NewSpider(fileName string) *Spider {

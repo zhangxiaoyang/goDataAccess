@@ -8,9 +8,9 @@ import (
 type TrimFunc func(string) string
 
 type Extractor struct {
-	itemScopeRule string
-	itemRules     map[string]string
-	trimFunc      TrimFunc
+	scopeRule string
+	rules     map[string]string
+	trimFunc  TrimFunc
 }
 
 func NewExtractor() *Extractor {
@@ -19,10 +19,10 @@ func NewExtractor() *Extractor {
 
 func (this *Extractor) Extract(body string) []*common.Item {
 	items := []*common.Item{}
-	scopes := regexp.MustCompile(this.itemScopeRule).FindAllString(body, -1)
+	scopes := regexp.MustCompile(this.scopeRule).FindAllString(body, -1)
 	for _, scope := range scopes {
 		item := common.NewItem()
-		for key, rule := range this.itemRules {
+		for key, rule := range this.rules {
 			value := regexp.MustCompile(rule).FindStringSubmatch(scope)[1]
 			if this.trimFunc != nil {
 				item.Set(key, this.trimFunc(value))
@@ -35,13 +35,13 @@ func (this *Extractor) Extract(body string) []*common.Item {
 	return items
 }
 
-func (this *Extractor) SetItemScopeRule(itemScopeRule string) *Extractor {
-	this.itemScopeRule = itemScopeRule
+func (this *Extractor) SetScopeRule(scopeRule string) *Extractor {
+	this.scopeRule = scopeRule
 	return this
 }
 
-func (this *Extractor) SetItemRules(itemRules map[string]string) *Extractor {
-	this.itemRules = itemRules
+func (this *Extractor) SetRules(rules map[string]string) *Extractor {
+	this.rules = rules
 	return this
 }
 

@@ -1,14 +1,25 @@
 {
     "task_name": "baidubaike",
+    "base_url": "http://baike.baidu.com",
+    "max_depth": 10,
     "start_urls": [
         "http://baike.baidu.com/view/3179.htm",
         "http://baike.baidu.com/subview/2632/19244814.htm"
     ],
-    "item_scope_rule": "(?s)<dt class=\"basicInfo-item name\">.*?</dd>",
-    "item_rules": {
-		"key": "(?s)name\">(.*?)</dt>",
-        "value": "(?s)value\">(.*?)</dd>"
+    "items": {
+        "scope_rule": "(?s)<dt class=\"basicInfo-item name\">.*?</dd>",
+        "rules": {
+            "key": "(?s)name\">(.*?)</dt>",
+            "value": "(?s)value\">(.*?)</dd>"
+        },
+        "trim_func": "trim_html_tags"
     },
-    "trim_func": "trim_html_tags",
+    "urls": {
+        "scope_rule": "(?s)<ul class=\"slider maqueeCanvas\">.*?</ul>",
+        "rules": {
+            "url1": "href=\"(.*?)\""
+        },
+        "trim_func": "trim_html_tags"
+    },
     "output_file": "run_spider_from_json_output.txt"
 }
