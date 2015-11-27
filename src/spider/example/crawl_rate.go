@@ -42,10 +42,9 @@ func main() {
 		SetWaitTime(10 * time.Millisecond).
 		SetPollingTime(10 * time.Millisecond)
 
-	engine.NewEngine("test_speed").
+	engine.NewEngine("crawl_rate").
 		SetStartUrls(genUrls()).
 		SetProcesser(NewMyProcesser()).
-		//AddPipeline(pipeline.NewConsolePipeline("\t")).
 		SetConfig(config).
 		Start()
 }

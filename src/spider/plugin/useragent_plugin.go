@@ -10,9 +10,9 @@ func NewUserAgentPlugin() *UserAgentPlugin {
 	return &UserAgentPlugin{}
 }
 
-func (this *UserAgentPlugin) Do(pluginType PluginType, params ...interface{}) {
+func (this *UserAgentPlugin) Do(pluginType PluginType, args ...interface{}) {
 	if pluginType == PreDownloaderType {
-		req := params[0].(*common.Request)
+		req := args[0].(*common.Request)
 		req.Request.Header.Set("User-Agent", "golang spider")
 	}
 }

@@ -24,10 +24,10 @@ func (this *MyProcesser) Process(resp *common.Response, y *common.Yield) {
 }
 
 func main() {
-	engine.NewEngine("test_reseturl_plugin").
+	engine.NewEngine("inject_useragent").
 		SetStartUrl("http://whatsmyuseragent.com/").
 		SetProcesser(NewMyProcesser()).
 		AddPlugin(plugin.NewUserAgentPlugin()).
-		AddPipeline(pipeline.NewConsolePipeline("\t")).
+		AddPipeline(pipeline.NewConsolePipeline()).
 		Start()
 }

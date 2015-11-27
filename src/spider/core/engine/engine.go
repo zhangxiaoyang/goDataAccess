@@ -159,8 +159,8 @@ func (this *Engine) isEmpty() bool {
 	return false
 }
 
-func (this *Engine) hook(pluginType plugin.PluginType, params ...interface{}) {
+func (this *Engine) hook(pluginType plugin.PluginType, args ...interface{}) {
 	for _, p := range this.plugins {
-		p.Do(pluginType, params...)
+		p.Do(pluginType, args...)
 	}
 }

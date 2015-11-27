@@ -1,22 +1,21 @@
 package pipeline
 
 import (
+	"encoding/json"
 	"fmt"
 	"spider/common"
 )
 
-type ConsolePipeline struct {
-	splitter string
-}
+type ConsolePipeline struct{}
 
-func NewConsolePipeline(splitter string) *ConsolePipeline {
-	return &ConsolePipeline{splitter: splitter}
+func NewConsolePipeline() *ConsolePipeline {
+	return &ConsolePipeline{}
 }
 
 func (this *ConsolePipeline) Pipe(items []*common.Item) {
 	for _, item := range items {
-		for k, v := range item.GetAll() {
-			fmt.Println(k + this.splitter + v)
+		if json, err := json.Marshal(item.GetAll()); err == nil {
+			fmt.Println(string(json))
 		}
 	}
 }

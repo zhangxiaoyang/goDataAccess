@@ -2,14 +2,12 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
-	"regexp"
 	"spider/common"
 	"spider/core/engine"
+	"spider/core/extractor"
 	"spider/core/pipeline"
 	"strings"
-	"time"
 )
 
 type MyProcesser struct{}
@@ -19,18 +17,18 @@ func NewMyProcesser() *MyProcesser {
 }
 
 func (this *MyProcesser) Process(resp *common.Response, y *common.Yield) {
-	y.AddItem(func() *common.Item {
-		item := common.NewItem()
-		item.Set("url", resp.Url)
-		item.Set("title", func() string {
-			m := regexp.MustCompile(`<title>(.*?)</title>`).FindStringSubmatch(resp.Body)
-			if len(m) > 0 {
-				return m[1]
-			}
-			return ""
-		}())
-		return item
-	}())
+	items := extractor.NewExtractor().
+		SetItemScopeRule(`(?s)<dt class="basicInfo-item name">.*?</dd>`).
+		SetItemRules(map[string]string{
+		"key":   `(?s)name">(.*?)</dt>`,
+		"value": `(?s)value">(.*?)</dd>`,
+	}).
+		SetTrimFunc(extractor.TrimHtmlTags).
+		Extract(resp.Body)
+
+	for _, item := range items {
+		y.AddItem(item)
+	}
 }
 
 func getUrlsFromFile(fileName string) []string {
@@ -45,16 +43,9 @@ func getUrlsFromFile(fileName string) []string {
 }
 
 func main() {
-	fmt.Println(time.Now())
-
-	file, _ := os.Create("output.txt")
-	defer file.Close()
-
-	engine.NewEngine("test_store_in_file").
-		AddPipeline(pipeline.NewFilePipeline(file, "\t")).
+	engine.NewEngine("crawl_baidubaike_with_extractor").
+		AddPipeline(pipeline.NewConsolePipeline()).
 		SetProcesser(NewMyProcesser()).
 		SetStartUrls(getUrlsFromFile("test.url")).
 		Start()
-
-	fmt.Println(time.Now())
 }
