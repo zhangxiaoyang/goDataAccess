@@ -18,14 +18,15 @@ type Rules struct {
 }
 
 type Spider struct {
-	TaskName   string   `json:"task_name"`
-	BaseUrl    string   `json:"base_url"`
-	MaxDepth   int      `json:"max_depth"`
-	StartUrls  []string `json:"start_urls"`
-	Items      Rules    `json:"items"`
-	Urls       Rules    `json:"urls"`
-	Merge      bool     `json:"merge"`
-	OutputFile string   `json:"output_file"`
+	TaskName    string   `json:"task_name"`
+	BaseUrl     string   `json:"base_url"`
+	MaxDepth    int      `json:"max_depth"`
+	StartUrls   []string `json:"start_urls"`
+	Items       Rules    `json:"items"`
+	Urls        Rules    `json:"urls"`
+	Merge       bool     `json:"merge"`
+	OutputFile  string   `json:"output_file"`
+	Concurrency int      `json:"concurrency"`
 }
 
 type MyProcesser struct {
@@ -109,5 +110,6 @@ func main() {
 		AddPipeline(pipeline.NewFilePipeline(file)).
 		SetProcesser(NewMyProcesser(s)).
 		SetStartUrls(s.StartUrls).
+		SetConfig(common.NewConfig().SetConcurrency(s.Concurrency)).
 		Start()
 }

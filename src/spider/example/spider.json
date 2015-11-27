@@ -22,5 +22,6 @@
         "trim_func": "trim_html_tags"
     },
     "merge": true,
-    "output_file": "run_spider_from_json_output.txt"
+    "output_file": "run_spider_from_json_output.txt",
+    "concurrency": 200
 }

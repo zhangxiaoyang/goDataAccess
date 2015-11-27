@@ -43,7 +43,7 @@ func getUrlsFromFile(fileName string) []string {
 }
 
 func main() {
-	file, _ := os.Create("output.txt")
+	file, _ := os.Create("crawl_baidubaike_and_store_it_output.txt")
 	defer file.Close()
 
 	engine.NewEngine("crawl_baidubaike_and_store_it").

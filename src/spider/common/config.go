@@ -12,6 +12,7 @@ type Config struct {
 	connectionTimeout   time.Duration
 	maxIdleConnsPerHost int
 	maxRetryTimes       int
+	logging             bool
 }
 
 func NewConfig() *Config {
@@ -23,6 +24,7 @@ func NewConfig() *Config {
 		connectionTimeout:   2 * time.Second,
 		maxIdleConnsPerHost: 10,
 		maxRetryTimes:       2,
+		logging:             true,
 	}
 }
 
@@ -61,6 +63,11 @@ func (this *Config) SetMaxRetryTimes(maxRetryTimes int) *Config {
 	return this
 }
 
+func (this *Config) SetLogging(logging bool) *Config {
+	this.logging = logging
+	return this
+}
+
 func (this *Config) GetConcurrency() int {
 	return this.concurrency
 }
@@ -87,4 +94,8 @@ func (this *Config) GetMaxIdleConnsPerHost() int {
 
 func (this *Config) GetMaxRetryTimes() int {
 	return this.maxRetryTimes
+}
+
+func (this *Config) GetLogging() bool {
+	return this.logging
 }

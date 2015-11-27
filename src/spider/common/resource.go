@@ -24,7 +24,7 @@ func (this *ResourceManager) Alloc() bool {
 	return false
 }
 
-func (this *ResourceManager) Dealloc() {
+func (this *ResourceManager) Free() {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 	this.count--
