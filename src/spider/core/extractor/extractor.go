@@ -5,10 +5,12 @@ import (
 	"spider/common"
 )
 
+type TrimFunc func(string) string
+
 type Extractor struct {
 	itemScopeRule string
 	itemRules     map[string]string
-	trimFunc      interface{}
+	trimFunc      TrimFunc
 }
 
 func NewExtractor() *Extractor {
@@ -22,7 +24,11 @@ func (this *Extractor) Extract(body string) []*common.Item {
 		item := common.NewItem()
 		for key, rule := range this.itemRules {
 			value := regexp.MustCompile(rule).FindStringSubmatch(scope)[1]
-			item.Set(key, this.trimFunc.(func(string) string)(value))
+			if this.trimFunc != nil {
+				item.Set(key, this.trimFunc(value))
+			} else {
+				item.Set(key, value)
+			}
 		}
 		items = append(items, item)
 	}
@@ -39,7 +45,7 @@ func (this *Extractor) SetItemRules(itemRules map[string]string) *Extractor {
 	return this
 }
 
-func (this *Extractor) SetTrimFunc(trimFunc interface{}) *Extractor {
+func (this *Extractor) SetTrimFunc(trimFunc TrimFunc) *Extractor {
 	this.trimFunc = trimFunc
 	return this
 }

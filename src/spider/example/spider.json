@@ -1,0 +1,14 @@
+{
+    "task_name": "baidubaike",
+    "start_urls": [
+        "http://baike.baidu.com/view/3179.htm",
+        "http://baike.baidu.com/subview/2632/19244814.htm"
+    ],
+    "item_scope_rule": "(?s)<dt class=\"basicInfo-item name\">.*?</dd>",
+    "item_rules": {
+		"key": "(?s)name\">(.*?)</dt>",
+        "value": "(?s)value\">(.*?)</dd>"
+    },
+    "trim_func": "trim_html_tags",
+    "output_file": "run_spider_from_json_output.txt"
+}
