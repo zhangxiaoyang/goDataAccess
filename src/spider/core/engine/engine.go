@@ -99,7 +99,11 @@ func (this *Engine) process(req *common.Request) {
 		this.scheduler.Push(r)
 	}
 
-	log.Printf("generated %d items from %s\n", len(y.GetAllItems()), req.Url)
+	if y.GetMerge() {
+		log.Printf("generated %d items(merged) from %s\n", len(y.GetAllItems()), req.Url)
+	} else {
+		log.Printf("generated %d items from %s\n", len(y.GetAllItems()), req.Url)
+	}
 	for _, p := range this.pipelines {
 		items := y.GetAllItems()
 		this.hook(plugin.PrePipelineType, items)

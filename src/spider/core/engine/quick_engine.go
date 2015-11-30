@@ -12,6 +12,7 @@ import (
 
 type QuickEngine struct {
 	engineFileName string
+	file           *os.File
 }
 
 func NewQuickEngine(engineFileName string) *QuickEngine {
@@ -20,15 +21,22 @@ func NewQuickEngine(engineFileName string) *QuickEngine {
 
 func (this *QuickEngine) Start() {
 	config := NewQuickEngineConfig(this.engineFileName)
-	file, _ := os.Create(config.OutputFile)
-	defer file.Close()
+	if config.OutputFile != "" {
+		this.file, _ = os.Create(config.OutputFile)
+		defer this.file.Close()
+	}
 
 	NewEngine(config.TaskName).
-		AddPipeline(pipeline.NewFilePipeline(file)).
+		AddPipeline(pipeline.NewFilePipeline(this.file)).
 		SetProcesser(NewQuickEngineProcesser(config)).
 		SetStartUrls(config.StartUrls).
 		SetConfig(common.NewConfig().SetConcurrency(config.Concurrency)).
 		Start()
+}
+
+func (this *QuickEngine) SetOutputFile(file *os.File) *QuickEngine {
+	this.file = file
+	return this
 }
 
 type QuickEngineConfig struct {
@@ -36,8 +44,8 @@ type QuickEngineConfig struct {
 	BaseUrl     string   `json:"base_url"`
 	MaxDepth    int      `json:"max_depth"`
 	StartUrls   []string `json:"start_urls"`
-	Items       Rules    `json:"items"`
-	Urls        Rules    `json:"urls"`
+	ItemRule    Rules    `json:"item_rule"`
+	RequestRule Rules    `json:"kv_rule"`
 	Merge       bool     `json:"merge"`
 	OutputFile  string   `json:"output_file"`
 	Concurrency int      `json:"concurrency"`
@@ -45,7 +53,7 @@ type QuickEngineConfig struct {
 
 type Rules struct {
 	ScopeRule string            `json:"scope_rule"`
-	Rules     map[string]string `json:"rules"`
+	KVRule    map[string]string `json:"kv_rule"`
 	TrimFunc  string            `json:"trim_func"`
 }
 
@@ -67,7 +75,7 @@ func NewQuickEngineProcesser(config *QuickEngineConfig) *QuickEngineProcesser {
 
 func (this *QuickEngineProcesser) processItems(resp *common.Response, y *common.Yield) {
 	var trimFunc extractor.TrimFunc
-	switch this.config.Items.TrimFunc {
+	switch this.config.ItemRule.TrimFunc {
 	case "trim_html_tags":
 		trimFunc = extractor.TrimHtmlTags
 	case "trim_blank":
@@ -75,8 +83,8 @@ func (this *QuickEngineProcesser) processItems(resp *common.Response, y *common.
 	}
 
 	items := extractor.NewExtractor().
-		SetScopeRule(this.config.Items.ScopeRule).
-		SetRules(this.config.Items.Rules).
+		SetScopeRule(this.config.ItemRule.ScopeRule).
+		SetRules(this.config.ItemRule.KVRule).
 		SetTrimFunc(trimFunc).
 		Extract(resp.Body)
 	for _, item := range items {
@@ -86,7 +94,7 @@ func (this *QuickEngineProcesser) processItems(resp *common.Response, y *common.
 
 func (this *QuickEngineProcesser) processRequests(resp *common.Response, y *common.Yield) {
 	var trimFunc extractor.TrimFunc
-	switch this.config.Urls.TrimFunc {
+	switch this.config.RequestRule.TrimFunc {
 	case "trim_html_tags":
 		trimFunc = extractor.TrimHtmlTags
 	case "trim_blank":
@@ -94,8 +102,8 @@ func (this *QuickEngineProcesser) processRequests(resp *common.Response, y *comm
 	}
 
 	items := extractor.NewExtractor().
-		SetScopeRule(this.config.Urls.ScopeRule).
-		SetRules(this.config.Urls.Rules).
+		SetScopeRule(this.config.RequestRule.ScopeRule).
+		SetRules(this.config.RequestRule.KVRule).
 		SetTrimFunc(trimFunc).
 		Extract(resp.Body)
 	for _, item := range items {
@@ -115,10 +123,10 @@ func (this *QuickEngineProcesser) Process(resp *common.Response, y *common.Yield
 	}
 
 	this.depth++
-	if this.config.Items.ScopeRule != "" {
+	if this.config.ItemRule.ScopeRule != "" {
 		this.processItems(resp, y)
 	}
-	if this.config.Urls.ScopeRule != "" {
+	if this.config.RequestRule.ScopeRule != "" {
 		this.processRequests(resp, y)
 	}
 	y.SetMerge(this.config.Merge)

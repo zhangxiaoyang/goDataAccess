@@ -9,7 +9,7 @@ type TrimFunc func(string) string
 
 type Extractor struct {
 	scopeRule string
-	rules     map[string]string
+	kvRule    map[string]string
 	trimFunc  TrimFunc
 }
 
@@ -22,7 +22,7 @@ func (this *Extractor) Extract(body string) []*common.Item {
 	scopes := regexp.MustCompile(this.scopeRule).FindAllString(body, -1)
 	for _, scope := range scopes {
 		item := common.NewItem()
-		for key, rule := range this.rules {
+		for key, rule := range this.kvRule {
 			value := regexp.MustCompile(rule).FindStringSubmatch(scope)[1]
 			if this.trimFunc != nil {
 				item.Set(key, this.trimFunc(value))
@@ -40,8 +40,8 @@ func (this *Extractor) SetScopeRule(scopeRule string) *Extractor {
 	return this
 }
 
-func (this *Extractor) SetRules(rules map[string]string) *Extractor {
-	this.rules = rules
+func (this *Extractor) SetRules(kvRule map[string]string) *Extractor {
+	this.kvRule = kvRule
 	return this
 }
 
