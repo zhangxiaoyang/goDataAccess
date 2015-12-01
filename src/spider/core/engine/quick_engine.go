@@ -4,33 +4,35 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"reflect"
 	"spider/common"
 	"spider/core/extractor"
 	"spider/core/pipeline"
 	"strings"
+	"time"
 )
 
 type QuickEngine struct {
-	engineFileName string
-	file           *os.File
+	quickEngineConfigPath string
+	file                  *os.File
 }
 
-func NewQuickEngine(engineFileName string) *QuickEngine {
-	return &QuickEngine{engineFileName: engineFileName}
+func NewQuickEngine(quickEngineConfigPath string) *QuickEngine {
+	return &QuickEngine{quickEngineConfigPath: quickEngineConfigPath}
 }
 
 func (this *QuickEngine) Start() {
-	config := NewQuickEngineConfig(this.engineFileName)
-	if config.OutputFile != "" {
-		this.file, _ = os.Create(config.OutputFile)
+	c := NewQuickEngineConfig(this.quickEngineConfigPath)
+	if c.OutputFile != "" {
+		this.file, _ = os.Create(c.OutputFile)
 		defer this.file.Close()
 	}
 
-	NewEngine(config.TaskName).
+	NewEngine(c.TaskName).
 		AddPipeline(pipeline.NewFilePipeline(this.file)).
-		SetProcesser(NewQuickEngineProcesser(config)).
-		SetStartUrls(config.StartUrls).
-		SetConfig(common.NewConfig().SetConcurrency(config.Concurrency)).
+		SetProcesser(NewQuickEngineProcesser(c)).
+		SetStartUrls(c.StartUrls).
+		SetConfig(c.ToCommonConfig()).
 		Start()
 }
 
@@ -42,50 +44,103 @@ func (this *QuickEngine) SetOutputFile(file *os.File) *QuickEngine {
 type QuickEngineConfig struct {
 	TaskName    string   `json:"task_name"`
 	BaseUrl     string   `json:"base_url"`
-	MaxDepth    int      `json:"max_depth"`
 	StartUrls   []string `json:"start_urls"`
-	ItemRule    Rules    `json:"item_rule"`
-	RequestRule Rules    `json:"kv_rule"`
+	ItemRule    _Rules   `json:"item_rule"`
+	RequestRule _Rules   `json:"kv_rule"`
 	Merge       bool     `json:"merge"`
 	OutputFile  string   `json:"output_file"`
-	Concurrency int      `json:"concurrency"`
+	Config      _Config  `json:"config"`
 }
 
-type Rules struct {
+type _Rules struct {
 	ScopeRule string            `json:"scope_rule"`
 	KVRule    map[string]string `json:"kv_rule"`
 	TrimFunc  string            `json:"trim_func"`
 }
 
+type _Config struct {
+	Concurrency         int    `json:"concurrency"`
+	PollingTime         string `json:"polling_time"`
+	WaitTime            string `json:"wait_time"`
+	DownloadTimeout     string `json:"download_timeout"`
+	ConnectionTimeout   string `json:"connection_timeout"`
+	MaxIdleConnsPerHost int    `json:"max_idle_conns_per_host"`
+	MaxRetryTimes       int    `json:"max_retry_times"`
+	Logging             bool   `json:"logging"`
+}
+
 func NewQuickEngineConfig(fileName string) *QuickEngineConfig {
-	config := &QuickEngineConfig{}
+	c := &QuickEngineConfig{}
 	file, _ := ioutil.ReadFile(fileName)
-	json.Unmarshal(file, config)
-	return config
+	json.Unmarshal(file, c)
+
+	t := reflect.TypeOf(&c.Config)
+	v := reflect.ValueOf(&c.Config)
+	config := common.NewConfig()
+	for i := 0; i < t.Elem().NumField(); i++ {
+		field := t.Elem().Field(i)
+		value := v.Elem().FieldByName(field.Name)
+		funcName := "Get" + field.Name
+		switch value.Type().Kind() {
+		case reflect.Int:
+			if value.Int() == 0 {
+				defaultValue := reflect.ValueOf(config).MethodByName(funcName).Call([]reflect.Value{})
+				value.SetInt(defaultValue[0].Int())
+			}
+		case reflect.String:
+			if value.String() == "" {
+				defaultValue := reflect.ValueOf(config).MethodByName(funcName).Call([]reflect.Value{})
+				value.SetString(defaultValue[0].Interface().(time.Duration).String()) // how to automatically identify type of defalutValue[0] // TODO
+			}
+		case reflect.Bool:
+			if value.Bool() == false {
+				defaultValue := reflect.ValueOf(config).MethodByName(funcName).Call([]reflect.Value{})
+				value.SetBool(defaultValue[0].Bool())
+			}
+		}
+	}
+	return c
+}
+
+func (this *QuickEngineConfig) stringToDuration(s string) time.Duration {
+	d, _ := time.ParseDuration(s)
+	return d
+}
+
+func (this *QuickEngineConfig) ToCommonConfig() *common.Config {
+	e := common.NewConfig().SetConcurrency(this.Config.Concurrency).
+		SetPollingTime(this.stringToDuration(this.Config.PollingTime)).
+		SetWaitTime(this.stringToDuration(this.Config.WaitTime)).
+		SetDownloadTimeout(this.stringToDuration(this.Config.DownloadTimeout)).
+		SetConnectionTimeout(this.stringToDuration(this.Config.ConnectionTimeout)).
+		SetMaxIdleConnsPerHost(this.Config.MaxIdleConnsPerHost).
+		SetMaxRetryTimes(this.Config.MaxRetryTimes).
+		SetLogging(this.Config.Logging)
+
+	return e
 }
 
 type QuickEngineProcesser struct {
 	config *QuickEngineConfig
-	depth  int
 }
 
 func NewQuickEngineProcesser(config *QuickEngineConfig) *QuickEngineProcesser {
-	return &QuickEngineProcesser{config: config, depth: 0}
+	return &QuickEngineProcesser{config: config}
 }
 
 func (this *QuickEngineProcesser) processItems(resp *common.Response, y *common.Yield) {
-	var trimFunc extractor.TrimFunc
+	var TrimFunc extractor.TrimFunc
 	switch this.config.ItemRule.TrimFunc {
 	case "trim_html_tags":
-		trimFunc = extractor.TrimHtmlTags
+		TrimFunc = extractor.TrimHtmlTags
 	case "trim_blank":
-		trimFunc = extractor.TrimBlank
+		TrimFunc = extractor.TrimBlank
 	}
 
 	items := extractor.NewExtractor().
 		SetScopeRule(this.config.ItemRule.ScopeRule).
 		SetRules(this.config.ItemRule.KVRule).
-		SetTrimFunc(trimFunc).
+		SetTrimFunc(TrimFunc).
 		Extract(resp.Body)
 	for _, item := range items {
 		y.AddItem(item)
@@ -93,18 +148,18 @@ func (this *QuickEngineProcesser) processItems(resp *common.Response, y *common.
 }
 
 func (this *QuickEngineProcesser) processRequests(resp *common.Response, y *common.Yield) {
-	var trimFunc extractor.TrimFunc
+	var TrimFunc extractor.TrimFunc
 	switch this.config.RequestRule.TrimFunc {
 	case "trim_html_tags":
-		trimFunc = extractor.TrimHtmlTags
+		TrimFunc = extractor.TrimHtmlTags
 	case "trim_blank":
-		trimFunc = extractor.TrimBlank
+		TrimFunc = extractor.TrimBlank
 	}
 
 	items := extractor.NewExtractor().
 		SetScopeRule(this.config.RequestRule.ScopeRule).
 		SetRules(this.config.RequestRule.KVRule).
-		SetTrimFunc(trimFunc).
+		SetTrimFunc(TrimFunc).
 		Extract(resp.Body)
 	for _, item := range items {
 		for _, url := range item.GetAll() {
@@ -118,11 +173,6 @@ func (this *QuickEngineProcesser) processRequests(resp *common.Response, y *comm
 }
 
 func (this *QuickEngineProcesser) Process(resp *common.Response, y *common.Yield) {
-	if this.depth > this.config.MaxDepth {
-		return
-	}
-
-	this.depth++
 	if this.config.ItemRule.ScopeRule != "" {
 		this.processItems(resp, y)
 	}

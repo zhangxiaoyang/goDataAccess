@@ -83,8 +83,12 @@ func (this *Engine) process(req *common.Request) {
 	this.hook(plugin.PreDownloaderType, req)
 	resp, err := this.downloader.Download(req, this.config)
 
-	if err != nil && this.config.GetMaxRetryTimes() > 0 {
-		this.retry(req)
+	if err != nil {
+		if this.config.GetMaxRetryTimes() > 0 {
+			this.retry(req)
+		} else {
+			log.Printf("downloaded failed(retried %d times) %s\n", req.Url, this.config.GetMaxRetryTimes())
+		}
 		return
 	}
 	log.Printf("downloaded ok %s\n", req.Url)
@@ -124,6 +128,7 @@ func (this *Engine) retry(req *common.Request) {
 		this.scheduler.Push(req)
 	} else {
 		delete(this.retryCache, h)
+		log.Printf("downloaded failed(retried %d times) %s\n", req.Url, this.config.GetMaxRetryTimes())
 	}
 }
 

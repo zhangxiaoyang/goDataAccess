@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	file, _ := os.Create("db/agent.json")
+	file, _ := os.Create("agent.json")
 	defer file.Close()
 
 	baseDir := "rule/"

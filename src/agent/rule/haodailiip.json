@@ -1,12 +1,11 @@
 {
     "task_name": "haodailiip",
     "base_url": "http://www.haodailiip.com/",
-    "max_depth": 5,
     "start_urls": [
         "http://www.haodailiip.com/"
     ],
     "item_rule": {
-        "scope_rule": "(?s)<tr style=\"font-size.*?>(.*?)</tr>",
+        "scope_rule": "(?s)<tr style=\"font-size.*?>.*?</tr>",
         "kv_rule": {
             "ip": "(?s)<td>.*?(\\d+\\.\\d+\\.\\d+\\.\\d+).*?</td>",
             "port": "(?s)<td>.*?(\\d+).*?</td>"
@@ -14,5 +13,7 @@
         "trim_func": "trim_html_tags"
     },
     "merge": false,
-    "concurrency": 200
+    "config": {
+        "concurrency": 1
+    }
 }

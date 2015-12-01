@@ -10,10 +10,10 @@ type Response struct {
 	Body     string
 }
 
-func NewResponse(resp *http.Response, url string, body []byte) *Response {
+func NewResponse(resp *http.Response, url string, body string) *Response {
 	return &Response{
 		Response: resp,
 		Url:      url,
-		Body:     string(body),
+		Body:     body,
 	}
 }

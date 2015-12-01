@@ -1,7 +1,6 @@
 {
     "task_name": "crawl_baidubaike_with_quickengine",
     "base_url": "http://baike.baidu.com",
-    "max_depth": 5,
     "start_urls": [
         "http://baike.baidu.com/view/3179.htm",
         "http://baike.baidu.com/subview/2632/19244814.htm"
@@ -23,5 +22,7 @@
     },
     "merge": true,
     "output_file": "crawl_baidubaike_with_quickengine_output.txt",
-    "concurrency": 200
+    "config": {
+        "concurrency": 20
+    }
 }

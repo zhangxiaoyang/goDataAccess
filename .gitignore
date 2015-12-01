@@ -2,3 +2,4 @@
 *.swp
 *.db
 src/agent/db/
+tmp/
