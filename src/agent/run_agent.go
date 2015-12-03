@@ -8,15 +8,17 @@ import (
 )
 
 func main() {
-	file, _ := os.Create("agent.json")
+	dbDir := "db/"
+	ruleDir := "rule/"
+
+	file, _ := os.Create(dbDir + "agent.json")
 	defer file.Close()
 
-	baseDir := "rule/"
-	if fileInfos, err := ioutil.ReadDir(baseDir); err == nil {
+	if fileInfos, err := ioutil.ReadDir(ruleDir); err == nil {
 		for _, f := range fileInfos {
-			log.Printf("Crawling %s\n", baseDir+f.Name())
-			engine.NewQuickEngine(baseDir + f.Name()).SetOutputFile(file).Start()
-			log.Printf("Finished %s\n", baseDir+f.Name())
+			log.Printf("Crawling %s\n", ruleDir+f.Name())
+			engine.NewQuickEngine(ruleDir + f.Name()).SetOutputFile(file).Start()
+			log.Printf("Finished %s\n", ruleDir+f.Name())
 		}
 	}
 

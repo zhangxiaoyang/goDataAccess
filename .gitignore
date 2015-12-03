@@ -3,3 +3,4 @@
 *.db
 src/agent/db/
 tmp/
+db/

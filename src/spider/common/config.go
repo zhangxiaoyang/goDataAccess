@@ -13,6 +13,7 @@ type Config struct {
 	maxIdleConnsPerHost int
 	maxRetryTimes       int
 	logging             bool
+	userAgent           string
 }
 
 func NewConfig() *Config {
@@ -25,6 +26,7 @@ func NewConfig() *Config {
 		maxIdleConnsPerHost: 10,
 		maxRetryTimes:       2,
 		logging:             true,
+		userAgent:           "golang spider",
 	}
 }
 
@@ -68,6 +70,11 @@ func (this *Config) SetLogging(logging bool) *Config {
 	return this
 }
 
+func (this *Config) SetUserAgent(userAgent string) *Config {
+	this.userAgent = userAgent
+	return this
+}
+
 func (this *Config) GetConcurrency() int {
 	return this.concurrency
 }
@@ -98,4 +105,8 @@ func (this *Config) GetMaxRetryTimes() int {
 
 func (this *Config) GetLogging() bool {
 	return this.logging
+}
+
+func (this *Config) GetUserAgent() string {
+	return this.userAgent
 }

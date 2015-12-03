@@ -2,7 +2,9 @@ package engine
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"reflect"
 	"spider/common"
@@ -46,7 +48,7 @@ type QuickEngineConfig struct {
 	BaseUrl     string   `json:"base_url"`
 	StartUrls   []string `json:"start_urls"`
 	ItemRule    _Rules   `json:"item_rule"`
-	RequestRule _Rules   `json:"kv_rule"`
+	RequestRule _Rules   `json:"request_rule"`
 	Merge       bool     `json:"merge"`
 	OutputFile  string   `json:"output_file"`
 	Config      _Config  `json:"config"`
@@ -67,6 +69,7 @@ type _Config struct {
 	MaxIdleConnsPerHost int    `json:"max_idle_conns_per_host"`
 	MaxRetryTimes       int    `json:"max_retry_times"`
 	Logging             bool   `json:"logging"`
+	UserAgent           string `json:"user_agent"`
 }
 
 func NewQuickEngineConfig(fileName string) *QuickEngineConfig {
@@ -90,7 +93,8 @@ func NewQuickEngineConfig(fileName string) *QuickEngineConfig {
 		case reflect.String:
 			if value.String() == "" {
 				defaultValue := reflect.ValueOf(config).MethodByName(funcName).Call([]reflect.Value{})
-				value.SetString(defaultValue[0].Interface().(time.Duration).String()) // how to automatically identify type of defalutValue[0] // TODO
+				value.SetString(fmt.Sprintf("%s", defaultValue[0].Interface()))
+				//value.SetString(defaultValue[0].Interface().(time.Duration).String())
 			}
 		case reflect.Bool:
 			if value.Bool() == false {
@@ -115,7 +119,8 @@ func (this *QuickEngineConfig) ToCommonConfig() *common.Config {
 		SetConnectionTimeout(this.stringToDuration(this.Config.ConnectionTimeout)).
 		SetMaxIdleConnsPerHost(this.Config.MaxIdleConnsPerHost).
 		SetMaxRetryTimes(this.Config.MaxRetryTimes).
-		SetLogging(this.Config.Logging)
+		SetLogging(this.Config.Logging).
+		SetUserAgent(this.Config.UserAgent)
 
 	return e
 }
@@ -173,11 +178,15 @@ func (this *QuickEngineProcesser) processRequests(resp *common.Response, y *comm
 }
 
 func (this *QuickEngineProcesser) Process(resp *common.Response, y *common.Yield) {
-	if this.config.ItemRule.ScopeRule != "" {
-		this.processItems(resp, y)
-	}
-	if this.config.RequestRule.ScopeRule != "" {
-		this.processRequests(resp, y)
-	}
-	y.SetMerge(this.config.Merge)
+	common.Try(func() {
+		if this.config.ItemRule.ScopeRule != "" {
+			this.processItems(resp, y)
+		}
+		if this.config.RequestRule.ScopeRule != "" {
+			this.processRequests(resp, y)
+		}
+		y.SetMerge(this.config.Merge)
+	}, func(e interface{}) {
+		log.Printf("pannic %s\n", e)
+	})
 }
