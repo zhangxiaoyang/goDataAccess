@@ -2,7 +2,10 @@
     "task_name": "xicidaili",
     "base_url": "http://www.xicidaili.com",
     "start_urls": [
-        "http://www.xicidaili.com/nn/"
+        "http://www.xicidaili.com/nn/",
+        "http://www.xicidaili.com/nt/",
+        "http://www.xicidaili.com/wn/",
+        "http://www.xicidaili.com/wt/"
     ],
     "item_rule": {
         "scope_rule": "(?s)<tr .*?>.*?<td>.*?</tr>",
@@ -21,8 +24,9 @@
     },
     "merge": false,
     "config": {
-        "concurrency": 5,
+        "concurrency": 10,
         "succ": "xicidaili",
+        "max_retry_times": 5,
         "user_agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.35 Safari/537.36"
     }
 }
