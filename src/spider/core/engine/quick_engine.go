@@ -70,6 +70,7 @@ type _Config struct {
 	MaxRetryTimes       int    `json:"max_retry_times"`
 	Logging             bool   `json:"logging"`
 	UserAgent           string `json:"user_agent"`
+	Succ                string `json:"succ"`
 }
 
 func NewQuickEngineConfig(fileName string) *QuickEngineConfig {
@@ -120,7 +121,8 @@ func (this *QuickEngineConfig) ToCommonConfig() *common.Config {
 		SetMaxIdleConnsPerHost(this.Config.MaxIdleConnsPerHost).
 		SetMaxRetryTimes(this.Config.MaxRetryTimes).
 		SetLogging(this.Config.Logging).
-		SetUserAgent(this.Config.UserAgent)
+		SetUserAgent(this.Config.UserAgent).
+		SetSucc(this.Config.Succ)
 
 	return e
 }

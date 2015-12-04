@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"spider/common"
+	"strings"
 )
 
 type HttpDownloader struct{}
@@ -66,6 +67,10 @@ func (this *HttpDownloader) Download(req *common.Request, config *common.Config)
 		}
 	} else {
 		return nil, errors.New(fmt.Sprintf("Response StatusCode: %d", resp.StatusCode))
+	}
+
+	if config.GetSucc() != "" && !strings.Contains(body, config.GetSucc()) {
+		return nil, errors.New(fmt.Sprintf("Invalid response body(succ: %s)", config.GetSucc()))
 	}
 	return common.NewResponse(resp, req.Url, body), nil
 }

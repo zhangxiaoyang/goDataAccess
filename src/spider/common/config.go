@@ -14,6 +14,7 @@ type Config struct {
 	maxRetryTimes       int
 	logging             bool
 	userAgent           string
+	succ                string
 }
 
 func NewConfig() *Config {
@@ -75,6 +76,11 @@ func (this *Config) SetUserAgent(userAgent string) *Config {
 	return this
 }
 
+func (this *Config) SetSucc(succ string) *Config {
+	this.succ = succ
+	return this
+}
+
 func (this *Config) GetConcurrency() int {
 	return this.concurrency
 }
@@ -109,4 +115,8 @@ func (this *Config) GetLogging() bool {
 
 func (this *Config) GetUserAgent() string {
 	return this.userAgent
+}
+
+func (this *Config) GetSucc() string {
+	return this.succ
 }

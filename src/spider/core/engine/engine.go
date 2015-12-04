@@ -66,7 +66,7 @@ func (this *Engine) Start() {
 		}
 
 		if ok := this.resourceManager.Alloc(); !ok {
-			log.Printf("blocked because no more resource\n")
+			log.Printf("waiting for resource\n")
 			time.Sleep(this.config.GetPollingTime())
 			continue
 		}
@@ -84,6 +84,8 @@ func (this *Engine) process(req *common.Request) {
 	resp, err := this.downloader.Download(req, this.config)
 
 	if err != nil {
+		log.Printf("downloaded failed(%s)\n", err)
+
 		if this.config.GetMaxRetryTimes() > 0 {
 			this.retry(req)
 		} else {
