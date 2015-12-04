@@ -1,6 +1,5 @@
 *_output.txt
 *.swp
 *.db
-src/agent/db/
-tmp/
 db/
+tmp/
