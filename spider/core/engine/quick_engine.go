@@ -17,10 +17,15 @@ import (
 type QuickEngine struct {
 	quickEngineConfigPath string
 	file                  *os.File
+	resetOutput           bool
 }
 
 func NewQuickEngine(quickEngineConfigPath string) *QuickEngine {
-	return &QuickEngine{quickEngineConfigPath: quickEngineConfigPath, file: nil}
+	return &QuickEngine{
+		quickEngineConfigPath: quickEngineConfigPath,
+		file:        nil,
+		resetOutput: false,
+	}
 }
 
 func (this *QuickEngine) GetEngine() *Engine {
@@ -30,7 +35,9 @@ func (this *QuickEngine) GetEngine() *Engine {
 		SetStartUrls(c.StartUrls).
 		SetConfig(c.ToCommonConfig())
 
-	if c.OutputFile != "" {
+	if this.file != nil {
+		return e.AddPipeline(pipeline.NewFilePipeline(this.file))
+	} else if c.OutputFile != "" {
 		this.file, _ = os.Create(c.OutputFile)
 		return e.AddPipeline(pipeline.NewFilePipeline(this.file))
 	}
@@ -40,10 +47,11 @@ func (this *QuickEngine) GetEngine() *Engine {
 
 func (this *QuickEngine) SetOutputFile(file *os.File) *QuickEngine {
 	this.file = file
+	this.resetOutput = true
 	return this
 }
 func (this *QuickEngine) Start() {
-	if this.file != nil {
+	if this.file != nil && !this.resetOutput {
 		defer this.file.Close()
 	}
 	this.GetEngine().Start()
