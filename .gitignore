@@ -1,4 +1,4 @@
-*_output.txt
+*.txt
 *.swp
 *.db
 db/
