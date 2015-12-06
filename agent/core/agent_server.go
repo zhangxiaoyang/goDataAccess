@@ -30,8 +30,8 @@ func NewAgentServer(dbDir string) *AgentServer {
 func (this *AgentServer) GetOneProxy(url *string, proxy *string) error {
 	domain := util.ExtractDomain(*url)
 	if _, ok := this.rings[domain]; ok {
-		this.rings[domain].Next()
 		*proxy = fmt.Sprintf("%s", this.rings[domain].Value)
+		this.rings[domain] = this.rings[domain].Next()
 		log.Printf("handle url %s use proxy %s\n", *url, *proxy)
 	} else {
 		log.Printf("cannot handle url %s\n", *url)
@@ -65,7 +65,7 @@ func (this *AgentServer) readAllProxyToRing() {
 				this.rings[domain] = ring.New(len(proxies))
 				for _, proxy := range proxies {
 					this.rings[domain].Value = proxy
-					this.rings[domain].Next()
+					this.rings[domain] = this.rings[domain].Next()
 				}
 			}
 		}

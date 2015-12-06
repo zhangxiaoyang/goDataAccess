@@ -20,30 +20,33 @@ type QuickEngine struct {
 }
 
 func NewQuickEngine(quickEngineConfigPath string) *QuickEngine {
-	return &QuickEngine{quickEngineConfigPath: quickEngineConfigPath}
+	return &QuickEngine{quickEngineConfigPath: quickEngineConfigPath, file: nil}
 }
 
 func (this *QuickEngine) GetEngine() *Engine {
 	c := NewQuickEngineConfig(this.quickEngineConfigPath)
-	if c.OutputFile != "" {
-		this.file, _ = os.Create(c.OutputFile)
-		defer this.file.Close()
-	}
-
-	return NewEngine(c.TaskName).
-		AddPipeline(pipeline.NewFilePipeline(this.file)).
+	e := NewEngine(c.TaskName).
 		SetProcesser(NewQuickEngineProcesser(c)).
 		SetStartUrls(c.StartUrls).
 		SetConfig(c.ToCommonConfig())
-}
 
-func (this *QuickEngine) Start() {
-	this.GetEngine().Start()
+	if c.OutputFile != "" {
+		this.file, _ = os.Create(c.OutputFile)
+		return e.AddPipeline(pipeline.NewFilePipeline(this.file))
+	}
+	return e.AddPipeline(pipeline.NewConsolePipeline())
+
 }
 
 func (this *QuickEngine) SetOutputFile(file *os.File) *QuickEngine {
 	this.file = file
 	return this
+}
+func (this *QuickEngine) Start() {
+	if this.file != nil {
+		defer this.file.Close()
+	}
+	this.GetEngine().Start()
 }
 
 type QuickEngineConfig struct {
