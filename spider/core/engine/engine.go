@@ -182,6 +182,12 @@ func (this *Engine) SetProcesser(processer processer.BaseProcesser) *Engine {
 	return this
 }
 
+func (this *Engine) SetPipeline(pipeline pipeline.BasePipeline) *Engine {
+	this.pipelines = this.pipelines[:0]
+	this.pipelines = append(this.pipelines, pipeline)
+	return this
+}
+
 func (this *Engine) AddPipeline(pipeline pipeline.BasePipeline) *Engine {
 	this.pipelines = append(this.pipelines, pipeline)
 	return this

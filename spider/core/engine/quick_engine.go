@@ -23,19 +23,22 @@ func NewQuickEngine(quickEngineConfigPath string) *QuickEngine {
 	return &QuickEngine{quickEngineConfigPath: quickEngineConfigPath}
 }
 
-func (this *QuickEngine) Start() {
+func (this *QuickEngine) GetEngine() *Engine {
 	c := NewQuickEngineConfig(this.quickEngineConfigPath)
 	if c.OutputFile != "" {
 		this.file, _ = os.Create(c.OutputFile)
 		defer this.file.Close()
 	}
 
-	NewEngine(c.TaskName).
+	return NewEngine(c.TaskName).
 		AddPipeline(pipeline.NewFilePipeline(this.file)).
 		SetProcesser(NewQuickEngineProcesser(c)).
 		SetStartUrls(c.StartUrls).
-		SetConfig(c.ToCommonConfig()).
-		Start()
+		SetConfig(c.ToCommonConfig())
+}
+
+func (this *QuickEngine) Start() {
+	this.GetEngine().Start()
 }
 
 func (this *QuickEngine) SetOutputFile(file *os.File) *QuickEngine {

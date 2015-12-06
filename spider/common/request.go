@@ -1,6 +1,7 @@
 package common
 
 import (
+	"log"
 	"net/http"
 	"strings"
 )
@@ -19,5 +20,9 @@ func NewRequest(url string) *Request {
 		}
 	}
 
-	panic("Unimplemented protocol for handling url: " + url)
+	log.Printf("unimplemented protocol for handling %s\n", url)
+	return &Request{
+		Request: nil,
+		Url:     url,
+	}
 }
