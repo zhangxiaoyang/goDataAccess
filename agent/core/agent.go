@@ -53,6 +53,9 @@ func (this *Agent) Update() {
 }
 
 func (this *Agent) Validate(validateUrl string, succ string) {
+	if !strings.HasPrefix(validateUrl, "http://") {
+		validateUrl = "http://" + validateUrl
+	}
 	validAgentPath := path.Join(this.dbDir, fmt.Sprintf("valid.%s.json", this.extractDomain(validateUrl)))
 	validateRulePath := path.Join(this.ruleDir, "validate.json")
 
