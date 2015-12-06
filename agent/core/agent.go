@@ -12,7 +12,6 @@ import (
 	"log"
 	"os"
 	"path"
-	"regexp"
 	"strings"
 )
 
@@ -56,7 +55,8 @@ func (this *Agent) Validate(validateUrl string, succ string) {
 	if !strings.HasPrefix(validateUrl, "http://") {
 		validateUrl = "http://" + validateUrl
 	}
-	validAgentPath := path.Join(this.dbDir, fmt.Sprintf("valid.%s.json", this.extractDomain(validateUrl)))
+	domain := util.ExtractDomain(validateUrl)
+	validAgentPath := path.Join(this.dbDir, fmt.Sprintf("valid.%s.json", domain))
 	validateRulePath := path.Join(this.ruleDir, "validate.json")
 
 	file, _ := os.Create(validAgentPath)
@@ -77,10 +77,6 @@ func (this *Agent) isUpdateRule(fileName string) bool {
 		return true
 	}
 	return false
-}
-
-func (this *Agent) extractDomain(url string) string {
-	return regexp.MustCompile(`http[s]?://([\w\-\.]+)`).FindStringSubmatch(url)[1]
 }
 
 func (this *Agent) readAllCandidate() []string {

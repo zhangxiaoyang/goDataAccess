@@ -1,0 +1,31 @@
+{
+    "task_name": "crawl_baidubaike_with_quickengine",
+    "base_url": "http://baike.baidu.com",
+    "start_urls": [
+        "http://baike.baidu.com/view/3179.htm",
+        "http://baike.baidu.com/subview/2632/19244814.htm"
+    ],
+    "item_rule": {
+        "scope_rule": "(?s)<dt class=\"basicInfo-item name\">.*?</dd>",
+        "kv_rule": {
+            "key": "(?s)name\">(.*?)</dt>",
+            "value": "(?s)value\">(.*?)</dd>"
+        },
+        "trim_func": "trim_html_tags"
+    },
+    "request_rule": {
+        "scope_rule": "(?s)<ul class=\"slider maqueeCanvas\">.*?</ul>",
+        "kv_rule": {
+            "url1": "href=\"(.*?)\""
+        },
+        "trim_func": "trim_html_tags"
+    },
+    "merge": true,
+    "output_file": "baidubaike_da.txt",
+    "config": {
+        "concurrency": 20,
+        "max_retry_times": 0,
+        "succ": "baidu",
+        "user_agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.35 Safari/537.36"
+    }
+}

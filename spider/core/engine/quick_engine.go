@@ -78,35 +78,29 @@ type _Config struct {
 
 func NewQuickEngineConfig(fileName string) *QuickEngineConfig {
 	c := &QuickEngineConfig{}
-	file, _ := ioutil.ReadFile(fileName)
-	json.Unmarshal(file, c)
-
 	t := reflect.TypeOf(&c.Config)
 	v := reflect.ValueOf(&c.Config)
 	config := common.NewConfig()
+
 	for i := 0; i < t.Elem().NumField(); i++ {
 		field := t.Elem().Field(i)
 		value := v.Elem().FieldByName(field.Name)
 		funcName := "Get" + field.Name
 		switch value.Type().Kind() {
 		case reflect.Int:
-			if value.Int() == 0 {
-				defaultValue := reflect.ValueOf(config).MethodByName(funcName).Call([]reflect.Value{})
-				value.SetInt(defaultValue[0].Int())
-			}
+			defaultValue := reflect.ValueOf(config).MethodByName(funcName).Call([]reflect.Value{})
+			value.SetInt(defaultValue[0].Int())
 		case reflect.String:
-			if value.String() == "" {
-				defaultValue := reflect.ValueOf(config).MethodByName(funcName).Call([]reflect.Value{})
-				value.SetString(fmt.Sprintf("%s", defaultValue[0].Interface()))
-				//value.SetString(defaultValue[0].Interface().(time.Duration).String())
-			}
+			defaultValue := reflect.ValueOf(config).MethodByName(funcName).Call([]reflect.Value{})
+			value.SetString(fmt.Sprintf("%s", defaultValue[0].Interface()))
 		case reflect.Bool:
-			if value.Bool() == false {
-				defaultValue := reflect.ValueOf(config).MethodByName(funcName).Call([]reflect.Value{})
-				value.SetBool(defaultValue[0].Bool())
-			}
+			defaultValue := reflect.ValueOf(config).MethodByName(funcName).Call([]reflect.Value{})
+			value.SetBool(defaultValue[0].Bool())
 		}
 	}
+
+	file, _ := ioutil.ReadFile(fileName)
+	json.Unmarshal(file, c)
 	return c
 }
 
