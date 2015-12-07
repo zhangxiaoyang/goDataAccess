@@ -9,6 +9,7 @@ import (
 	"net/rpc"
 	"os"
 	"strings"
+	"time"
 )
 
 func usage() {
@@ -25,6 +26,10 @@ func main() {
 		ruleDir := "rule/"
 		agent := core.NewAgent(ruleDir, dbDir)
 		op := os.Args[1]
+		startTime := time.Now()
+		defer func() {
+			log.Printf("[cli.go] took %s to complete\n", time.Since(startTime))
+		}()
 
 		switch strings.ToLower(op) {
 		case "u":

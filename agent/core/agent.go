@@ -44,23 +44,26 @@ func (this *Agent) Update() {
 		return
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(fileInfos))
-
+	updateRulePaths := []string{}
 	for _, f := range fileInfos {
 		updateRulePath := path.Join(this.ruleDir, f.Name())
 		if this.isUpdateRule(f.Name()) {
-			go func() {
-				defer wg.Done()
-				log.Printf("started %s\n", updateRulePath)
-				engine.NewQuickEngine(updateRulePath).SetOutputFile(file).Start()
-				log.Printf("finished %s\n", updateRulePath)
-			}()
+			updateRulePaths = append(updateRulePaths, updateRulePath)
 		} else {
 			log.Printf("skip %s\n", updateRulePath)
 		}
 	}
 
+	var wg sync.WaitGroup
+	wg.Add(len(updateRulePaths))
+	for _, updateRulePath := range updateRulePaths {
+		go func() {
+			defer wg.Done()
+			log.Printf("started %s\n", updateRulePath)
+			engine.NewQuickEngine(updateRulePath).SetOutputFile(file).Start()
+			log.Printf("finished %s\n", updateRulePath)
+		}()
+	}
 	wg.Wait()
 }
 

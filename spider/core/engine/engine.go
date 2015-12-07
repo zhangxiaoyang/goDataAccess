@@ -40,6 +40,11 @@ func NewEngine(taskName string) *Engine {
 }
 
 func (this *Engine) Start() {
+	startedTime := time.Now()
+	defer func() {
+		log.Printf("[engine.go] took %s\n", time.Since(startedTime))
+	}()
+
 	log.Printf("started\n")
 	log.Printf("config: %+v", this.config)
 	log.Printf("scheduler: %s", reflect.TypeOf(this.scheduler).Elem().Name())
