@@ -19,7 +19,9 @@ func NewHttpDownloader() *HttpDownloader {
 }
 
 func (this *HttpDownloader) Download(req *common.Request, config *common.Config) (*common.Response, error) {
-	req.Request.Header.Set("User-Agent", config.GetUserAgent())
+	for key, value := range config.GetHeaders() {
+		req.Request.Header.Set(key, value)
+	}
 
 	client := &http.Client{
 		Timeout: 2 * config.GetDownloadTimeout(),

@@ -75,16 +75,16 @@ type _Rules struct {
 }
 
 type _Config struct {
-	Concurrency         int    `json:"concurrency"`
-	PollingTime         string `json:"polling_time"`
-	WaitTime            string `json:"wait_time"`
-	DownloadTimeout     string `json:"download_timeout"`
-	ConnectionTimeout   string `json:"connection_timeout"`
-	MaxIdleConnsPerHost int    `json:"max_idle_conns_per_host"`
-	MaxRetryTimes       int    `json:"max_retry_times"`
-	Logging             bool   `json:"logging"`
-	UserAgent           string `json:"user_agent"`
-	Succ                string `json:"succ"`
+	Concurrency         int               `json:"concurrency"`
+	PollingTime         string            `json:"polling_time"`
+	WaitTime            string            `json:"wait_time"`
+	DownloadTimeout     string            `json:"download_timeout"`
+	ConnectionTimeout   string            `json:"connection_timeout"`
+	MaxIdleConnsPerHost int               `json:"max_idle_conns_per_host"`
+	MaxRetryTimes       int               `json:"max_retry_times"`
+	Logging             bool              `json:"logging"`
+	Headers             map[string]string `json:"headers"`
+	Succ                string            `json:"succ"`
 }
 
 func NewQuickEngineConfig(fileName string) *QuickEngineConfig {
@@ -129,7 +129,7 @@ func (this *QuickEngineConfig) ToCommonConfig() *common.Config {
 		SetMaxIdleConnsPerHost(this.Config.MaxIdleConnsPerHost).
 		SetMaxRetryTimes(this.Config.MaxRetryTimes).
 		SetLogging(this.Config.Logging).
-		SetUserAgent(this.Config.UserAgent).
+		SetHeaders(this.Config.Headers).
 		SetSucc(this.Config.Succ)
 
 	return e

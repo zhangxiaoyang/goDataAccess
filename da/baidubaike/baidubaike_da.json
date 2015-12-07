@@ -1,5 +1,5 @@
 {
-    "task_name": "crawl_baidubaike_with_quickengine",
+    "task_name": "baidubaike_da",
     "base_url": "http://baike.baidu.com",
     "start_urls": [
         "http://baike.baidu.com/view/3179.htm",

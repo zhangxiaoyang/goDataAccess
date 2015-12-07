@@ -13,7 +13,7 @@ type Config struct {
 	maxIdleConnsPerHost int
 	maxRetryTimes       int
 	logging             bool
-	userAgent           string
+	headers             map[string]string
 	succ                string
 }
 
@@ -27,7 +27,7 @@ func NewConfig() *Config {
 		maxIdleConnsPerHost: 10,
 		maxRetryTimes:       2,
 		logging:             true,
-		userAgent:           "golang spider",
+		headers:             map[string]string{},
 	}
 }
 
@@ -71,8 +71,8 @@ func (this *Config) SetLogging(logging bool) *Config {
 	return this
 }
 
-func (this *Config) SetUserAgent(userAgent string) *Config {
-	this.userAgent = userAgent
+func (this *Config) SetHeaders(headers map[string]string) *Config {
+	this.headers = headers
 	return this
 }
 
@@ -113,8 +113,8 @@ func (this *Config) GetLogging() bool {
 	return this.logging
 }
 
-func (this *Config) GetUserAgent() string {
-	return this.userAgent
+func (this *Config) GetHeaders() map[string]string {
+	return this.headers
 }
 
 func (this *Config) GetSucc() string {

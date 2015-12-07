@@ -22,7 +22,10 @@ func NewAgentDownloader() *AgentDownloader {
 }
 
 func (this *AgentDownloader) Download(req *common.Request, config *common.Config) (*common.Response, error) {
-	req.Request.Header.Set("User-Agent", config.GetUserAgent())
+	for key, value := range config.GetHeaders() {
+		req.Request.Header.Set(key, value)
+	}
+
 	proxyUrl := this.getOneProxy(req.Url)
 	if proxyUrl == "" {
 		return nil, errors.New(fmt.Sprintf("get proxy failed"))

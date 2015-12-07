@@ -24,7 +24,6 @@
     "output_file": "crawl_baidubaike_with_quickengine_output.txt",
     "config": {
         "concurrency": 20,
-        "succ": "baidu",
-        "user_agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.35 Safari/537.36"
+        "succ": "baidu"
     }
 }

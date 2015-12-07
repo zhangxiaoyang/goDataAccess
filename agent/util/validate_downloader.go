@@ -27,7 +27,9 @@ func (this *ValidateDownloader) Download(req *common.Request, config *common.Con
 
 	req.Url = this.validateUrl
 	req.Request, _ = http.NewRequest("GET", req.Url, nil)
-	req.Request.Header.Set("User-Agent", config.GetUserAgent())
+	for key, value := range config.GetHeaders() {
+		req.Request.Header.Set(key, value)
+	}
 
 	client := &http.Client{
 		Timeout: 2 * config.GetDownloadTimeout(),
