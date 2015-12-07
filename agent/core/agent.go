@@ -13,6 +13,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 )
 
 type Agent struct {
@@ -37,18 +38,30 @@ func (this *Agent) Update() {
 	file, _ := os.Create(this.candidateAgentPath)
 	defer file.Close()
 
-	if fileInfos, err := ioutil.ReadDir(this.ruleDir); err == nil {
-		for _, f := range fileInfos {
-			updateRulePath := path.Join(this.ruleDir, f.Name())
-			if this.isUpdateRule(f.Name()) {
+	fileInfos, err := ioutil.ReadDir(this.ruleDir)
+	if err != nil {
+		log.Printf("error %s\n", err)
+		return
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(len(fileInfos))
+
+	for _, f := range fileInfos {
+		updateRulePath := path.Join(this.ruleDir, f.Name())
+		if this.isUpdateRule(f.Name()) {
+			go func() {
+				defer wg.Done()
 				log.Printf("started %s\n", updateRulePath)
 				engine.NewQuickEngine(updateRulePath).SetOutputFile(file).Start()
 				log.Printf("finished %s\n", updateRulePath)
-			} else {
-				log.Printf("skip %s\n", updateRulePath)
-			}
+			}()
+		} else {
+			log.Printf("skip %s\n", updateRulePath)
 		}
 	}
+
+	wg.Wait()
 }
 
 func (this *Agent) Validate(validateUrl string, succ string) {

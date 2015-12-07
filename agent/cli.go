@@ -11,6 +11,14 @@ import (
 	"strings"
 )
 
+func usage() {
+	fmt.Println("Usage")
+	fmt.Println("go run cli.go [update/u]")
+	fmt.Println("go run cli.go [validate/v] [validateUrl] [succ]")
+	fmt.Println("go run cli.go [serve/s]")
+	fmt.Println()
+}
+
 func main() {
 	if len(os.Args) > 1 {
 		dbDir := "db/"
@@ -49,11 +57,6 @@ func main() {
 			}
 			return
 		}
-
-		fmt.Println("Usage")
-		fmt.Println("go run cli.go [update/u]")
-		fmt.Println("go run cli.go [validate/v] [validateUrl] [succ]")
-		fmt.Println("go run cli.go [serve/s]")
-		fmt.Println()
 	}
+	usage()
 }
