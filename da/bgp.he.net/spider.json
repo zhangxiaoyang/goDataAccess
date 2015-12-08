@@ -12,7 +12,7 @@
         "wait_time": "100ms",
         "download_timeout": "5s",
         "connection_timeout": "2s",
-        "concurrency": 1500,
+        "concurrency": 500,
         "max_retry_times": 20,
         "succ": "BGP",
         "headers": {

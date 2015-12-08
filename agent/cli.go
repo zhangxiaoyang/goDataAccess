@@ -57,9 +57,7 @@ func main() {
 				log.Printf("listen error %s\n", err)
 				return
 			}
-			go http.Serve(listen, nil)
-			for {
-			}
+			http.Serve(listen, nil)
 			return
 		}
 	}
