@@ -8,8 +8,12 @@
     },
     "output_file": "bgp.he.net.txt",
     "config": {
-        "concurrency": 1,
-        "max_retry_times": 0,
+        "polling_time": "100ms",
+        "wait_time": "100ms",
+        "download_timeout": "5s",
+        "connection_timeout": "2s",
+        "concurrency": 1500,
+        "max_retry_times": 20,
         "succ": "BGP",
         "headers": {
             "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.35 Safari/537.36"

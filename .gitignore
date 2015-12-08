@@ -1,5 +1,6 @@
 *.txt
 *.swp
 *.db
+*.bak
 db/
 tmp/

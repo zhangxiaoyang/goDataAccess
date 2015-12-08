@@ -17,7 +17,6 @@ import (
 	"net/rpc"
 	"net/url"
 	"strings"
-	"time"
 )
 
 func main() {
@@ -35,13 +34,12 @@ func main() {
 }
 
 type HeDownloader struct {
-	jar      *cookiejar.Jar
-	isAuthed bool
+	jar      map[string]*cookiejar.Jar
+	isAuthed map[string]bool
 }
 
 func NewHeDownloader() *HeDownloader {
-	jar, _ := cookiejar.New(nil)
-	return &HeDownloader{jar: jar, isAuthed: false}
+	return &HeDownloader{jar: map[string]*cookiejar.Jar{}, isAuthed: map[string]bool{}}
 }
 
 func (this *HeDownloader) Download(req *common.Request, config *common.Config) (*common.Response, error) {
@@ -56,13 +54,14 @@ func (this *HeDownloader) Download(req *common.Request, config *common.Config) (
 }
 
 func (this *HeDownloader) auth(proxyUrl string, config *common.Config) bool {
-	if this.isAuthed {
-		log.Printf("have authed %+v\n", this.jar)
+	if _, ok := this.isAuthed[proxyUrl]; ok {
+		log.Printf("have authed %+v\n", this.jar[proxyUrl])
 		return true
 	}
 
 	var p string
 	var i string
+	this.jar[proxyUrl], _ = cookiejar.New(nil)
 	{
 		u := "http://bgp.he.net/i"
 		resp, err := this.send(proxyUrl, common.NewRequest(u), config)
@@ -81,7 +80,7 @@ func (this *HeDownloader) auth(proxyUrl string, config *common.Config) bool {
 			return false
 		}
 		path := ""
-		for _, c := range this.jar.Cookies(req.Request.URL) {
+		for _, c := range this.jar[proxyUrl].Cookies(req.Request.URL) {
 			if c.Name == "path" {
 				path = c.Value
 				break
@@ -105,38 +104,35 @@ func (this *HeDownloader) auth(proxyUrl string, config *common.Config) bool {
 		form.Add("i", i)
 		req := common.NewRequest(u)
 		req.Request, _ = http.NewRequest("POST", u, strings.NewReader(form.Encode()))
-		//req.Request.Header.Set("Content-Type", "application/x-www-form-uencoded; param=value")
 		_, err := this.send(proxyUrl, req, config)
 		if err != nil {
 			log.Printf("auth failed(%s) %s\n", u, err)
 			return false
 		}
 	}
-	this.isAuthed = true
-	log.Printf("auth succeed %+v\n", this.jar)
+	this.isAuthed[proxyUrl] = true
+	log.Printf("auth succeed %+v\n", this.jar[proxyUrl])
 	return true
 }
 
 func (this *HeDownloader) send(proxyUrl string, req *common.Request, config *common.Config) (*common.Response, error) {
-	timeout := 12 * time.Second
-
 	for key, value := range config.GetHeaders() {
 		req.Request.Header.Set(key, value)
 	}
 
 	client := &http.Client{
-		Jar:     this.jar,
-		Timeout: timeout,
+		Jar:     this.jar[proxyUrl],
+		Timeout: 2 * config.GetDownloadTimeout(),
 		Transport: &http.Transport{
 			Proxy: http.ProxyURL(&url.URL{Host: proxyUrl}),
 			Dial: func(netw, addr string) (net.Conn, error) {
-				c, err := net.DialTimeout(netw, addr, timeout)
+				c, err := net.DialTimeout(netw, addr, config.GetConnectionTimeout())
 				if err != nil {
 					return nil, err
 				}
 				return c, nil
 			},
-			ResponseHeaderTimeout: timeout,
+			ResponseHeaderTimeout: config.GetDownloadTimeout(),
 			MaxIdleConnsPerHost:   config.GetMaxIdleConnsPerHost(),
 		},
 	}
@@ -174,7 +170,7 @@ func (this *HeDownloader) send(proxyUrl string, req *common.Request, config *com
 		return nil, errors.New(fmt.Sprintf("Response StatusCode: %d", resp.StatusCode))
 	}
 
-	if this.isAuthed {
+	if _, ok := this.isAuthed[proxyUrl]; ok {
 		if config.GetSucc() != "" && !strings.Contains(body, config.GetSucc()) {
 			return nil, errors.New(fmt.Sprintf("Invalid response body(succ: %s)", config.GetSucc()))
 		}

@@ -13,7 +13,6 @@ import (
 	"net/rpc"
 	"net/url"
 	"strings"
-	"time"
 )
 
 type AgentDownloader struct{}
@@ -23,8 +22,6 @@ func NewAgentDownloader() *AgentDownloader {
 }
 
 func (this *AgentDownloader) Download(req *common.Request, config *common.Config) (*common.Response, error) {
-	timeout := 6 * time.Second
-
 	for key, value := range config.GetHeaders() {
 		req.Request.Header.Set(key, value)
 	}
@@ -36,17 +33,17 @@ func (this *AgentDownloader) Download(req *common.Request, config *common.Config
 	log.Printf("use proxy %s\n", proxyUrl)
 
 	client := &http.Client{
-		Timeout: timeout,
+		Timeout: 2 * config.GetDownloadTimeout(),
 		Transport: &http.Transport{
 			Proxy: http.ProxyURL(&url.URL{Host: proxyUrl}),
 			Dial: func(netw, addr string) (net.Conn, error) {
-				c, err := net.DialTimeout(netw, addr, timeout)
+				c, err := net.DialTimeout(netw, addr, config.GetConnectionTimeout())
 				if err != nil {
 					return nil, err
 				}
 				return c, nil
 			},
-			ResponseHeaderTimeout: timeout / 2,
+			ResponseHeaderTimeout: config.GetDownloadTimeout(),
 			MaxIdleConnsPerHost:   config.GetMaxIdleConnsPerHost(),
 		},
 	}

@@ -62,7 +62,7 @@ func (this *Engine) Start() {
 			log.Printf("finished\n")
 			break
 		} else {
-			log.Printf("%d goroutines are running\n", this.resourceManager.Count())
+			log.Printf("%d goroutines are running, %d tasks left\n", this.resourceManager.Count(), this.scheduler.Count())
 			time.Sleep(this.config.GetWaitTime())
 		}
 
