@@ -7,7 +7,7 @@ import (
 
 func main() {
 	engine.
-		NewQuickEngine("baidubaike_da.json").
+		NewQuickEngine("spider.json").
 		GetEngine().
 		SetDownloader(downloader.NewAgentDownloader()).
 		Start()
