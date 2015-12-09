@@ -10,9 +10,16 @@ To simplify development, you may try Scrapy, one of the most famous web crawling
 
 goDataAccess can help you deal with these hassles, which contains three parts: `spider`, `agent` and `da`.
 
+Architecture
+---
+
+![](godataaccess-da.png)
+
 Spider
 ---
 Spider is a web crawling framework like scrapy, including engine, scheduler, downloader, processer, extractor,  pipeline, and plugin.
+
+![](godataaccess-spider.png)
 
 #### Example
 - Scraping `http://m.baidu.com` with `engine`
