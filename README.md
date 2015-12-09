@@ -2,6 +2,8 @@ goDataAccess
 ===
 goDataAccess is a data access framework implemented in native Golang(1.5+), which is designed to make the DA(data access) process easier and efficient.
 
+[中文文档](https://github.com/zhangxiaoyang/goDataAccess/wiki)
+
 Introduction
 ---
 For many reasons, we often have to crawl public information from the Internet. The typical way of scraping information includes analyzing target websites and writing rules, writing spiders, saving data, etc, in a process called data access.
