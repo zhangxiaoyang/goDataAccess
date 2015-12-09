@@ -93,11 +93,12 @@ func (this *AgentDownloader) getOneProxy(url string) string {
 		log.Printf("dialing error %s\n", err)
 		return ""
 	}
+	defer client.Close()
 
 	var proxy string
 	err = client.Call("AgentServer.GetOneProxy", &url, &proxy)
 	if err != nil {
-		log.Printf("arith error %s\n", err)
+		log.Printf("error %s\n", err)
 		return ""
 	}
 	return proxy
