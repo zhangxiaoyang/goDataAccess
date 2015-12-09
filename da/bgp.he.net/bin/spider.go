@@ -16,17 +16,30 @@ import (
 	"net/http/cookiejar"
 	"net/rpc"
 	"net/url"
+	"os"
 	"strings"
 )
 
 func main() {
-	domains := util.LoadUrlsFromFile("top-1m.txt")
+	if len(os.Args) < 3 {
+		log.Printf("lost argument")
+		return
+	}
+
+	configFilePath, inFilePath, outFilePath := os.Args[1], os.Args[2], os.Args[3]
+	outFile, _ := os.Create(outFilePath)
+	defer outFile.Close()
+
+	log.Printf("load urls from %s", inFilePath)
+	domains := util.LoadUrlsFromFile(inFilePath)
+
 	urls := []string{}
 	for _, domain := range domains {
 		urls = append(urls, "http://bgp.he.net/dns/"+domain)
 	}
 	engine.
-		NewQuickEngine("spider.json").
+		NewQuickEngine(configFilePath).
+		SetOutputFile(outFile).
 		GetEngine().
 		SetStartUrls(urls).
 		SetDownloader(NewHeDownloader()).

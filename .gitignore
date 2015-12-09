@@ -4,3 +4,7 @@
 *.bak
 db/
 tmp/
+output/
+split/
+log/
+data/
