@@ -35,6 +35,7 @@ split_file "$DATA/top-1m.txt"
 ls $SPLIT | while read filename
 do
     logger "Processing $SPLIT/$filename" "$LOG/$filename.log"
-    go run "$BIN/spider.go" "$BIN/spider.json" "$SPLIT/$filename" "$OUTPUT/$filename"
+    timeout 80m go run "$BIN/spider.go" "$BIN/spider.json" "$SPLIT/$filename" "$OUTPUT/$filename" &
+    wait
     logger "Finished $SPLIT/$filename" "$LOG/$filename.log"
 done
