@@ -13,6 +13,10 @@ func NewProxyPlugin() *ProxyPlugin {
 func (this *ProxyPlugin) Do(pluginType PluginType, args ...interface{}) {
 	if pluginType == PreDownloaderType {
 		req := args[0].(*common.Request)
-		req.ProxyUrl = common.NewProxy().GetOneProxy(req.Url)
+		var err error
+		req.ProxyUrl, err = common.NewProxy().GetOneProxy(req.Url)
+		if err != nil {
+			req.Error = err
+		}
 	}
 }

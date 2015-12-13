@@ -42,6 +42,9 @@ func (this *HttpDownloader) Download(req *common.Request, config *common.Config)
 	if req.Jar != nil {
 		client.Jar = req.Jar
 	}
+	if req.Error != nil {
+		return nil, req.Error
+	}
 
 	resp, err := common.NewCurl(client, req).Do()
 	if err != nil {

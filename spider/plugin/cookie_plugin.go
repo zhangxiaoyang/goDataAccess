@@ -5,7 +5,7 @@ import (
 	"net/http/cookiejar"
 )
 
-type GetCookieFunc func(*common.Request) *cookiejar.Jar
+type GetCookieFunc func(*common.Request) (*cookiejar.Jar, error)
 
 type CookiePlugin struct {
 	getCookieFunc GetCookieFunc
@@ -18,6 +18,10 @@ func NewCookiePlugin(getCookieFunc GetCookieFunc) *CookiePlugin {
 func (this *CookiePlugin) Do(pluginType PluginType, args ...interface{}) {
 	if pluginType == PreDownloaderType {
 		req := args[0].(*common.Request)
-		req.Jar = this.getCookieFunc(req)
+		var err error
+		req.Jar, err = this.getCookieFunc(req)
+		if err != nil {
+			req.Error = err
+		}
 	}
 }

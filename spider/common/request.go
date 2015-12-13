@@ -11,19 +11,26 @@ type Request struct {
 	Url      string
 	ProxyUrl string
 	Jar      *cookiejar.Jar
+	Error    error
 }
 
 func NewRequest(url string) *Request {
 	if strings.HasPrefix(url, "http://") {
 		req, _ := http.NewRequest("GET", url, nil)
 		return &Request{
-			Request: req,
-			Url:     url,
+			Request:  req,
+			Url:      url,
+			ProxyUrl: "",
+			Jar:      nil,
+			Error:    nil,
 		}
 	}
 
 	return &Request{
-		Request: nil,
-		Url:     url,
+		Request:  nil,
+		Url:      url,
+		ProxyUrl: "",
+		Jar:      nil,
+		Error:    nil,
 	}
 }

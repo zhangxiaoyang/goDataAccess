@@ -53,10 +53,10 @@ type Auth struct {
 	IsAuthed map[string]bool
 }
 
-func GetCookieFunc(req *common.Request) *cookiejar.Jar {
+func GetCookieFunc(req *common.Request) (*cookiejar.Jar, error) {
 	if _, ok := gAuth.IsAuthed[req.ProxyUrl]; ok {
 		log.Printf("have authed %+v\n", gAuth.Jar[req.ProxyUrl])
-		return gAuth.Jar[req.ProxyUrl]
+		return gAuth.Jar[req.ProxyUrl], nil
 	}
 
 	baseUrl := "http://bgp.he.net"
@@ -86,7 +86,7 @@ func GetCookieFunc(req *common.Request) *cookiejar.Jar {
 		resp, err := common.NewCurl(client, common.NewRequest(u)).Do()
 		if err != nil {
 			log.Printf("1. auth failed(%s) %s\n", u, err)
-			return nil
+			return nil, err
 		}
 		i = strings.Trim(resp.Response.Header.Get("ETag"), "\"")
 	}
@@ -95,7 +95,7 @@ func GetCookieFunc(req *common.Request) *cookiejar.Jar {
 		_, err := common.NewCurl(client, common.NewRequest(u)).Do()
 		if err != nil {
 			log.Printf("2. auth failed(%s) %s\n", u, err)
-			return nil
+			return nil, err
 		}
 		path := ""
 		for _, c := range gAuth.Jar[req.ProxyUrl].Cookies(req.Request.URL) {
@@ -112,7 +112,7 @@ func GetCookieFunc(req *common.Request) *cookiejar.Jar {
 		_, err := common.NewCurl(client, common.NewRequest(u)).Do()
 		if err != nil {
 			log.Printf("3. auth failed(%s) %s\n", u, err)
-			return nil
+			return nil, err
 		}
 	}
 	{
@@ -120,15 +120,15 @@ func GetCookieFunc(req *common.Request) *cookiejar.Jar {
 		form := url.Values{}
 		form.Add("p", p)
 		form.Add("i", i)
-		req := common.NewRequest(u)
-		req.Request, _ = http.NewRequest("POST", u, strings.NewReader(form.Encode()))
-		_, err := common.NewCurl(client, req).Do()
+		r := common.NewRequest(u)
+		r.Request, _ = http.NewRequest("POST", u, strings.NewReader(form.Encode()))
+		_, err := common.NewCurl(client, r).Do()
 		if err != nil {
 			log.Printf("4.auth failed(%s) %s\n", u, err)
-			return nil
+			return nil, err
 		}
 	}
 	gAuth.IsAuthed[req.ProxyUrl] = true
 	log.Printf("auth succeed %+v\n", gAuth.Jar[req.ProxyUrl])
-	return gAuth.Jar[req.ProxyUrl]
+	return gAuth.Jar[req.ProxyUrl], nil
 }
