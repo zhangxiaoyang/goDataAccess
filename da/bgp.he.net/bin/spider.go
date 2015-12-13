@@ -43,8 +43,8 @@ func main() {
 		GetEngine()
 	gConfig = e.GetConfig()
 	e.SetStartUrls(urls).
-		AddPlugin(plugin.NewCookiePlugin(GetCookieFunc)).
-		AddPlugin(plugin.NewProxyPlugin())
+		AddPlugin(plugin.NewProxyPlugin()).
+		AddPlugin(plugin.NewCookiePlugin(GetCookieFunc))
 	e.Start()
 }
 
@@ -54,13 +54,14 @@ type Auth struct {
 }
 
 func GetCookieFunc(req *common.Request) *cookiejar.Jar {
-	if _, ok := gAuth.IsAuthed[req.Url]; ok {
+	if _, ok := gAuth.IsAuthed[req.ProxyUrl]; ok {
 		log.Printf("have authed %+v\n", gAuth.Jar[req.ProxyUrl])
 		return gAuth.Jar[req.ProxyUrl]
 	}
 
 	baseUrl := "http://bgp.he.net"
 	transport := &http.Transport{
+		Proxy: http.ProxyURL(&url.URL{Host: req.ProxyUrl}),
 		Dial: func(netw, addr string) (net.Conn, error) {
 			c, err := net.DialTimeout(netw, addr, gConfig.GetConnectionTimeout())
 			if err != nil {
@@ -71,25 +72,20 @@ func GetCookieFunc(req *common.Request) *cookiejar.Jar {
 		ResponseHeaderTimeout: gConfig.GetDownloadTimeout(),
 		MaxIdleConnsPerHost:   gConfig.GetMaxIdleConnsPerHost(),
 	}
+	gAuth.Jar[req.ProxyUrl], _ = cookiejar.New(nil)
 	client := &http.Client{
+		Jar:       gAuth.Jar[req.ProxyUrl],
 		Timeout:   2 * gConfig.GetDownloadTimeout(),
 		Transport: transport,
-	}
-	if req.ProxyUrl != "" {
-		transport.Proxy = http.ProxyURL(&url.URL{Host: req.ProxyUrl})
-	}
-	if req.Jar != nil {
-		client.Jar = req.Jar
 	}
 
 	var p string
 	var i string
-	gAuth.Jar[req.ProxyUrl], _ = cookiejar.New(nil)
 	{
 		u := baseUrl + "/i"
 		resp, err := common.NewCurl(client, common.NewRequest(u)).Do()
 		if err != nil {
-			log.Printf("auth failed(%s) %s\n", u, err)
+			log.Printf("1. auth failed(%s) %s\n", u, err)
 			return nil
 		}
 		i = strings.Trim(resp.Response.Header.Get("ETag"), "\"")
@@ -98,7 +94,7 @@ func GetCookieFunc(req *common.Request) *cookiejar.Jar {
 		u := baseUrl + "/dns/qq.com"
 		_, err := common.NewCurl(client, common.NewRequest(u)).Do()
 		if err != nil {
-			log.Printf("auth failed(%s) %s\n", u, err)
+			log.Printf("2. auth failed(%s) %s\n", u, err)
 			return nil
 		}
 		path := ""
@@ -115,7 +111,7 @@ func GetCookieFunc(req *common.Request) *cookiejar.Jar {
 		u := baseUrl + "/cc"
 		_, err := common.NewCurl(client, common.NewRequest(u)).Do()
 		if err != nil {
-			log.Printf("auth failed(%s) %s\n", u, err)
+			log.Printf("3. auth failed(%s) %s\n", u, err)
 			return nil
 		}
 	}
@@ -126,13 +122,13 @@ func GetCookieFunc(req *common.Request) *cookiejar.Jar {
 		form.Add("i", i)
 		req := common.NewRequest(u)
 		req.Request, _ = http.NewRequest("POST", u, strings.NewReader(form.Encode()))
-		_, err := common.NewCurl(client, common.NewRequest(u)).Do()
+		_, err := common.NewCurl(client, req).Do()
 		if err != nil {
-			log.Printf("auth failed(%s) %s\n", u, err)
+			log.Printf("4.auth failed(%s) %s\n", u, err)
 			return nil
 		}
 	}
-	gAuth.IsAuthed[req.Url] = true
+	gAuth.IsAuthed[req.ProxyUrl] = true
 	log.Printf("auth succeed %+v\n", gAuth.Jar[req.ProxyUrl])
 	return gAuth.Jar[req.ProxyUrl]
 }
