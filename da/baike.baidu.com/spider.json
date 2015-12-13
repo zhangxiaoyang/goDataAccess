@@ -27,6 +27,8 @@
         "max_retry_times": 10,
         "max_idle_conns_per_host": 1000,
         "succ": "baidu",
-        "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.35 Safari/537.36"
+        "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.35 Safari/537.36"
+        }
     }
 }

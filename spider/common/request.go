@@ -2,12 +2,15 @@ package common
 
 import (
 	"net/http"
+	"net/http/cookiejar"
 	"strings"
 )
 
 type Request struct {
-	Request *http.Request
-	Url     string
+	Request  *http.Request
+	Url      string
+	ProxyUrl string
+	Jar      *cookiejar.Jar
 }
 
 func NewRequest(url string) *Request {

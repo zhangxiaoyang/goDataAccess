@@ -1,24 +1,23 @@
 package main
 
 import (
-	"compress/gzip"
 	"crypto/md5"
-	"errors"
 	"fmt"
 	"github.com/zhangxiaoyang/goDataAccess/da/util"
 	"github.com/zhangxiaoyang/goDataAccess/spider/common"
 	"github.com/zhangxiaoyang/goDataAccess/spider/core/engine"
-	"io"
-	"io/ioutil"
+	"github.com/zhangxiaoyang/goDataAccess/spider/plugin"
 	"log"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
-	"net/rpc"
 	"net/url"
 	"os"
 	"strings"
 )
+
+var gAuth = &Auth{Jar: map[string]*cookiejar.Jar{}, IsAuthed: map[string]bool{}}
+var gConfig *common.Config
 
 func main() {
 	if len(os.Args) < 3 {
@@ -37,63 +36,73 @@ func main() {
 	for _, domain := range domains {
 		urls = append(urls, "http://bgp.he.net/dns/"+domain)
 	}
-	engine.
+
+	e := engine.
 		NewQuickEngine(configFilePath).
 		SetOutputFile(outFile).
-		GetEngine().
-		SetStartUrls(urls).
-		SetDownloader(NewHeDownloader()).
-		Start()
+		GetEngine()
+	gConfig = e.GetConfig()
+	e.SetStartUrls(urls).
+		AddPlugin(plugin.NewCookiePlugin(GetCookieFunc)).
+		AddPlugin(plugin.NewProxyPlugin())
+	e.Start()
 }
 
-type HeDownloader struct {
-	jar      map[string]*cookiejar.Jar
-	isAuthed map[string]bool
+type Auth struct {
+	Jar      map[string]*cookiejar.Jar
+	IsAuthed map[string]bool
 }
 
-func NewHeDownloader() *HeDownloader {
-	return &HeDownloader{jar: map[string]*cookiejar.Jar{}, isAuthed: map[string]bool{}}
-}
-
-func (this *HeDownloader) Download(req *common.Request, config *common.Config) (*common.Response, error) {
-	proxyUrl := this.getOneProxy(req.Url)
-	if proxyUrl == "" {
-		return nil, errors.New(fmt.Sprintf("get proxy failed"))
+func GetCookieFunc(req *common.Request) *cookiejar.Jar {
+	if _, ok := gAuth.IsAuthed[req.Url]; ok {
+		log.Printf("have authed %+v\n", gAuth.Jar[req.ProxyUrl])
+		return gAuth.Jar[req.ProxyUrl]
 	}
-	log.Printf("use proxy %s\n", proxyUrl)
 
-	this.auth(proxyUrl, config)
-	return this.send(proxyUrl, req, config)
-}
-
-func (this *HeDownloader) auth(proxyUrl string, config *common.Config) bool {
-	if _, ok := this.isAuthed[proxyUrl]; ok {
-		log.Printf("have authed %+v\n", this.jar[proxyUrl])
-		return true
+	baseUrl := "http://bgp.he.net"
+	transport := &http.Transport{
+		Dial: func(netw, addr string) (net.Conn, error) {
+			c, err := net.DialTimeout(netw, addr, gConfig.GetConnectionTimeout())
+			if err != nil {
+				return nil, err
+			}
+			return c, nil
+		},
+		ResponseHeaderTimeout: gConfig.GetDownloadTimeout(),
+		MaxIdleConnsPerHost:   gConfig.GetMaxIdleConnsPerHost(),
+	}
+	client := &http.Client{
+		Timeout:   2 * gConfig.GetDownloadTimeout(),
+		Transport: transport,
+	}
+	if req.ProxyUrl != "" {
+		transport.Proxy = http.ProxyURL(&url.URL{Host: req.ProxyUrl})
+	}
+	if req.Jar != nil {
+		client.Jar = req.Jar
 	}
 
 	var p string
 	var i string
-	this.jar[proxyUrl], _ = cookiejar.New(nil)
+	gAuth.Jar[req.ProxyUrl], _ = cookiejar.New(nil)
 	{
-		u := "http://bgp.he.net/i"
-		resp, err := this.send(proxyUrl, common.NewRequest(u), config)
+		u := baseUrl + "/i"
+		resp, err := common.NewCurl(client, common.NewRequest(u)).Do()
 		if err != nil {
 			log.Printf("auth failed(%s) %s\n", u, err)
-			return false
+			return nil
 		}
 		i = strings.Trim(resp.Response.Header.Get("ETag"), "\"")
 	}
 	{
-		u := "http://bgp.he.net/dns/qq.com"
-		req := common.NewRequest(u)
-		_, err := this.send(proxyUrl, req, config)
+		u := baseUrl + "/dns/qq.com"
+		_, err := common.NewCurl(client, common.NewRequest(u)).Do()
 		if err != nil {
 			log.Printf("auth failed(%s) %s\n", u, err)
-			return false
+			return nil
 		}
 		path := ""
-		for _, c := range this.jar[proxyUrl].Cookies(req.Request.URL) {
+		for _, c := range gAuth.Jar[req.ProxyUrl].Cookies(req.Request.URL) {
 			if c.Name == "path" {
 				path = c.Value
 				break
@@ -103,107 +112,27 @@ func (this *HeDownloader) auth(proxyUrl string, config *common.Config) bool {
 		p = fmt.Sprintf("%x", md5.Sum([]byte(decodedPath)))
 	}
 	{
-		u := "http://bgp.he.net/cc"
-		_, err := this.send(proxyUrl, common.NewRequest(u), config)
+		u := baseUrl + "/cc"
+		_, err := common.NewCurl(client, common.NewRequest(u)).Do()
 		if err != nil {
 			log.Printf("auth failed(%s) %s\n", u, err)
-			return false
+			return nil
 		}
 	}
 	{
-		u := "http://bgp.he.net/jc"
+		u := baseUrl + "/jc"
 		form := url.Values{}
 		form.Add("p", p)
 		form.Add("i", i)
 		req := common.NewRequest(u)
 		req.Request, _ = http.NewRequest("POST", u, strings.NewReader(form.Encode()))
-		_, err := this.send(proxyUrl, req, config)
+		_, err := common.NewCurl(client, common.NewRequest(u)).Do()
 		if err != nil {
 			log.Printf("auth failed(%s) %s\n", u, err)
-			return false
+			return nil
 		}
 	}
-	this.isAuthed[proxyUrl] = true
-	log.Printf("auth succeed %+v\n", this.jar[proxyUrl])
-	return true
-}
-
-func (this *HeDownloader) send(proxyUrl string, req *common.Request, config *common.Config) (*common.Response, error) {
-	for key, value := range config.GetHeaders() {
-		req.Request.Header.Set(key, value)
-	}
-
-	client := &http.Client{
-		Jar:     this.jar[proxyUrl],
-		Timeout: 2 * config.GetDownloadTimeout(),
-		Transport: &http.Transport{
-			Proxy: http.ProxyURL(&url.URL{Host: proxyUrl}),
-			Dial: func(netw, addr string) (net.Conn, error) {
-				c, err := net.DialTimeout(netw, addr, config.GetConnectionTimeout())
-				if err != nil {
-					return nil, err
-				}
-				return c, nil
-			},
-			ResponseHeaderTimeout: config.GetDownloadTimeout(),
-			MaxIdleConnsPerHost:   config.GetMaxIdleConnsPerHost(),
-		},
-	}
-
-	resp, err := client.Do(req.Request)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var body string
-	if resp.StatusCode == 200 {
-		switch resp.Header.Get("Content-Encoding") {
-		case "gzip":
-			reader, _ := gzip.NewReader(resp.Body)
-			for {
-				buf := make([]byte, 1024)
-				n, err := reader.Read(buf)
-				if err != nil && err != io.EOF {
-					return nil, err
-				}
-				if n == 0 {
-					break
-				}
-				body += string(buf)
-			}
-		default:
-			bodyByte, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-			body = string(bodyByte)
-		}
-	} else {
-		return nil, errors.New(fmt.Sprintf("Response StatusCode: %d", resp.StatusCode))
-	}
-
-	if _, ok := this.isAuthed[proxyUrl]; ok {
-		if config.GetSucc() != "" && !strings.Contains(body, config.GetSucc()) {
-			return nil, errors.New(fmt.Sprintf("Invalid response body(succ: %s)", config.GetSucc()))
-		}
-	}
-	return common.NewResponse(resp, req.Url, body), nil
-}
-
-func (this *HeDownloader) getOneProxy(url string) string {
-	client, err := rpc.DialHTTP("tcp", "127.0.0.1"+":1234")
-	if err != nil {
-		log.Printf("dialing error %s\n", err)
-		return ""
-	}
-	defer client.Close()
-
-	var proxy string
-	err = client.Call("AgentServer.GetOneProxy", &url, &proxy)
-	if err != nil {
-		log.Printf("error %s\n", err)
-		return ""
-	}
-	return proxy
+	gAuth.IsAuthed[req.Url] = true
+	log.Printf("auth succeed %+v\n", gAuth.Jar[req.ProxyUrl])
+	return gAuth.Jar[req.ProxyUrl]
 }

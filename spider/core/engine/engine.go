@@ -211,3 +211,7 @@ func (this *Engine) SetConfig(config *common.Config) *Engine {
 	}
 	return this
 }
+
+func (this *Engine) GetConfig() *common.Config {
+	return this.config
+}
