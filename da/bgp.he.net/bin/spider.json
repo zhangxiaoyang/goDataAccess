@@ -1,11 +1,16 @@
 {
     "task_name": "bgp.he.net",
-    "item_rule": {
-        "scope_rule": "(?s).*",
-        "kv_rule": {
-            "html": "(?s)(.*)"
+    "rules": [
+        {
+            "url_match": "http://bgp.he.net",
+            "item_rule": {
+                "scope_rule": "(?s).*",
+                "kv_rule": {
+                    "html": "(?s)(.*)"
+                }
+            }
         }
-    },
+    ],
     "output_file": "bgp.he.net.txt",
     "config": {
         "polling_time": "100ms",

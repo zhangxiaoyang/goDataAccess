@@ -57,12 +57,12 @@ func (this *Agent) Update() {
 	var wg sync.WaitGroup
 	wg.Add(len(updateRulePaths))
 	for _, updateRulePath := range updateRulePaths {
-		go func() {
+		go func(p string) {
 			defer wg.Done()
-			log.Printf("started %s\n", updateRulePath)
-			engine.NewQuickEngine(updateRulePath).SetOutputFile(file).Start()
-			log.Printf("finished %s\n", updateRulePath)
-		}()
+			log.Printf("started %s\n", p)
+			engine.NewQuickEngine(p).SetOutputFile(file).Start()
+			log.Printf("finished %s\n", p)
+		}(updateRulePath)
 	}
 	wg.Wait()
 }

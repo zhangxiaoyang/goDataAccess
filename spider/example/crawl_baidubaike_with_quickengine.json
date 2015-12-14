@@ -1,26 +1,50 @@
 {
     "task_name": "crawl_baidubaike_with_quickengine",
-    "base_url": "http://baike.baidu.com",
     "start_urls": [
         "http://baike.baidu.com/view/3179.htm",
         "http://baike.baidu.com/subview/2632/19244814.htm"
     ],
-    "item_rule": {
-        "scope_rule": "(?s)<dt class=\"basicInfo-item name\">.*?</dd>",
-        "kv_rule": {
-            "key": "(?s)name\">(.*?)</dt>",
-            "value": "(?s)value\">(.*?)</dd>"
+    "rules": [
+        {
+            "url_match": "http://baike.baidu.com/view",
+            "base_url": "http://baike.baidu.com",
+            "item_rule": {
+                "scope_rule": "(?s)<dt class=\"basicInfo-item name\">.*?</dd>",
+                "kv_rule": {
+                    "key": "(?s)name\">(.*?)</dt>",
+                    "value": "(?s)value\">(.*?)</dd>"
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "request_rule": {
+                "scope_rule": "(?s)<ul class=\"slider maqueeCanvas\">.*?</ul>",
+                "kv_rule": {
+                    "url1": "href=\"(.*?)\""
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "merge": true
         },
-        "trim_func": "trim_html_tags"
-    },
-    "request_rule": {
-        "scope_rule": "(?s)<ul class=\"slider maqueeCanvas\">.*?</ul>",
-        "kv_rule": {
-            "url1": "href=\"(.*?)\""
-        },
-        "trim_func": "trim_html_tags"
-    },
-    "merge": true,
+        {
+            "url_match": "http://baike.baidu.com/subview",
+            "base_url": "http://baike.baidu.com",
+            "item_rule": {
+                "scope_rule": "(?s).*",
+                "kv_rule": {
+                    "name": "(?s)<dd class=\"lemmaWgt-lemmaTitle-title\">.*?<h1>(.*?)</h1>.*?</dd>"
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "request_rule": {
+                "scope_rule": "(?s)<ul class=\"slider maqueeCanvas\">.*?</ul>",
+                "kv_rule": {
+                    "url1": "href=\"(.*?)\""
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "merge": true
+        }
+    ],
     "output_file": "crawl_baidubaike_with_quickengine_output.txt",
     "config": {
         "concurrency": 20,

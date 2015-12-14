@@ -1,28 +1,33 @@
 {
     "task_name": "kuaidaili",
-    "base_url": "http://www.kuaidaili.com",
     "start_urls": [
         "http://www.kuaidaili.com/free/inha/",
         "http://www.kuaidaili.com/free/intr/",
         "http://www.kuaidaili.com/free/outha/",
         "http://www.kuaidaili.com/free/outtr/"
     ],
-    "item_rule": {
-        "scope_rule": "(?s)<tr>.*?<td>.*?</tr>",
-        "kv_rule": {
-            "ip": "(?s)<td>(\\d+\\.\\d+\\.\\d+\\.\\d+)</td>",
-            "port": "(?s)<td>(\\d+)</td>"
-        },
-        "trim_func": "trim_html_tags"
-    },
-    "request_rule": {
-        "scope_rule": "(?s)class=\"active\">.*?</li><li>.*?</li>",
-        "kv_rule": {
-            "url1": "href=\"(.*?)\""
-        },
-        "trim_func": "trim_html_tags"
-    },
-    "merge": false,
+    "rules": [
+        {
+            "url_match": "http://www.kuaidaili.com",
+            "base_url": "http://www.kuaidaili.com",
+            "item_rule": {
+                "scope_rule": "(?s)<tr>.*?<td>.*?</tr>",
+                "kv_rule": {
+                    "ip": "(?s)<td>(\\d+\\.\\d+\\.\\d+\\.\\d+)</td>",
+                    "port": "(?s)<td>(\\d+)</td>"
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "request_rule": {
+                "scope_rule": "(?s)class=\"active\">.*?</li><li>.*?</li>",
+                "kv_rule": {
+                    "url1": "href=\"(.*?)\""
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "merge": false
+        }
+    ],
     "config": {
         "concurrency": 10,
         "succ": "kuaidaili",

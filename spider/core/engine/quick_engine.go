@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -58,21 +59,28 @@ func (this *QuickEngine) Start() {
 }
 
 type QuickEngineConfig struct {
-	TaskName    string   `json:"task_name"`
-	BaseUrl     string   `json:"base_url"`
-	StartUrls   []string `json:"start_urls"`
-	ItemRule    _Rules   `json:"item_rule"`
-	RequestRule _Rules   `json:"request_rule"`
-	Merge       bool     `json:"merge"`
-	OutputFile  string   `json:"output_file"`
-	Config      _Config  `json:"config"`
+	TaskName   string   `json:"task_name"`
+	StartUrls  []string `json:"start_urls"`
+	Rules      []_Rule  `json:"rules"`
+	OutputFile string   `json:"output_file"`
+	Config     _Config  `json:"config"`
 }
 
-type _Rules struct {
+type _Rule struct {
+	UrlMatch    string       `json:"url_match"`
+	BaseUrl     string       `json:"base_url"`
+	ItemRule    _ItemRule    `json:"item_rule"`
+	RequestRule _RequestRule `json:"request_rule"`
+	Merge       bool         `json:"merge"`
+}
+
+type _ItemRule struct {
 	ScopeRule string            `json:"scope_rule"`
 	KVRule    map[string]string `json:"kv_rule"`
 	TrimFunc  string            `json:"trim_func"`
 }
+
+type _RequestRule _ItemRule
 
 type _Config struct {
 	Concurrency         int               `json:"concurrency"`
@@ -143,9 +151,9 @@ func NewQuickEngineProcesser(config *QuickEngineConfig) *QuickEngineProcesser {
 	return &QuickEngineProcesser{config: config}
 }
 
-func (this *QuickEngineProcesser) processItems(resp *common.Response, y *common.Yield) {
+func (this *QuickEngineProcesser) processItems(resp *common.Response, y *common.Yield, rule _Rule) {
 	var TrimFunc extractor.TrimFunc
-	switch this.config.ItemRule.TrimFunc {
+	switch rule.ItemRule.TrimFunc {
 	case "trim_html_tags":
 		TrimFunc = extractor.TrimHtmlTags
 	case "trim_blank":
@@ -153,8 +161,8 @@ func (this *QuickEngineProcesser) processItems(resp *common.Response, y *common.
 	}
 
 	items := extractor.NewExtractor().
-		SetScopeRule(this.config.ItemRule.ScopeRule).
-		SetRules(this.config.ItemRule.KVRule).
+		SetScopeRule(rule.ItemRule.ScopeRule).
+		SetRules(rule.ItemRule.KVRule).
 		SetTrimFunc(TrimFunc).
 		Extract(resp.Body)
 	for _, item := range items {
@@ -162,9 +170,9 @@ func (this *QuickEngineProcesser) processItems(resp *common.Response, y *common.
 	}
 }
 
-func (this *QuickEngineProcesser) processRequests(resp *common.Response, y *common.Yield) {
+func (this *QuickEngineProcesser) processRequests(resp *common.Response, y *common.Yield, rule _Rule) {
 	var TrimFunc extractor.TrimFunc
-	switch this.config.RequestRule.TrimFunc {
+	switch rule.RequestRule.TrimFunc {
 	case "trim_html_tags":
 		TrimFunc = extractor.TrimHtmlTags
 	case "trim_blank":
@@ -172,8 +180,8 @@ func (this *QuickEngineProcesser) processRequests(resp *common.Response, y *comm
 	}
 
 	items := extractor.NewExtractor().
-		SetScopeRule(this.config.RequestRule.ScopeRule).
-		SetRules(this.config.RequestRule.KVRule).
+		SetScopeRule(rule.RequestRule.ScopeRule).
+		SetRules(rule.RequestRule.KVRule).
 		SetTrimFunc(TrimFunc).
 		Extract(resp.Body)
 	for _, item := range items {
@@ -181,7 +189,7 @@ func (this *QuickEngineProcesser) processRequests(resp *common.Response, y *comm
 			if strings.HasPrefix(url, "http://") {
 				y.AddRequest(common.NewRequest(url))
 			} else {
-				y.AddRequest(common.NewRequest(this.config.BaseUrl + url))
+				y.AddRequest(common.NewRequest(rule.BaseUrl + url))
 			}
 		}
 	}
@@ -189,13 +197,18 @@ func (this *QuickEngineProcesser) processRequests(resp *common.Response, y *comm
 
 func (this *QuickEngineProcesser) Process(resp *common.Response, y *common.Yield) {
 	common.Try(func() {
-		if this.config.ItemRule.ScopeRule != "" {
-			this.processItems(resp, y)
+		for _, rule := range this.config.Rules {
+			if regexp.MustCompile(rule.UrlMatch).MatchString(resp.Url) {
+				if rule.ItemRule.ScopeRule != "" {
+					this.processItems(resp, y, rule)
+				}
+				if rule.RequestRule.ScopeRule != "" {
+					this.processRequests(resp, y, rule)
+				}
+				y.SetMerge(rule.Merge)
+				break //Only use the first match
+			}
 		}
-		if this.config.RequestRule.ScopeRule != "" {
-			this.processRequests(resp, y)
-		}
-		y.SetMerge(this.config.Merge)
 	}, func(e interface{}) {
 		log.Printf("pannic %s\n", e)
 	})
