@@ -106,8 +106,12 @@ func main() {
 		Start()
 }
 ```
-More examples here: <https://github.com/zhangxiaoyang/goDataAccess/tree/master/spider/example>
+More examples here:
+
+<https://github.com/zhangxiaoyang/goDataAccess/tree/master/spider/example>
+
 Learn more plugins:
+
 <https://github.com/zhangxiaoyang/goDataAccess/tree/master/spider/plugin>
 
 
@@ -116,7 +120,7 @@ Agent
 ---
 Agent is based on `goDataAccess/spider`. You can use it to scrape and validate Internet free proxies. Free and available proxies will be served as RPC.
 
-If you want to combine agents with your spiders, you may need to learn [proxy_plugin](https://github.com/zhangxiaoyang/goDataAccess/blob/master/spider/core/plugin/proxy_plugin.go) or view [DA demos](https://github.com/zhangxiaoyang/goDataAccess/tree/master/da).
+If you want to combine agents with your spiders, you may need to learn [proxy_plugin](https://github.com/zhangxiaoyang/goDataAccess/tree/master/spider/plugin/proxy_plugin.go) or view [DA demos](https://github.com/zhangxiaoyang/goDataAccess/tree/master/da).
 
 #### Usage
 ```
@@ -129,9 +133,11 @@ go run cli.go serve # RPC service at 127.0.0.1:1234
 DA
 ---
 Crawl baike.baidu.com with proxies:
+
 <https://github.com/zhangxiaoyang/goDataAccess/tree/master/da/baike.baidu.com>
  
 Crawl bgp.he.net(handle cookie/session):
+
 <https://github.com/zhangxiaoyang/goDataAccess/tree/master/da/bgp.he.net>
  
 License
