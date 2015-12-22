@@ -3,6 +3,7 @@ package core
 import (
 	"bufio"
 	"container/ring"
+	"encoding/json"
 	"fmt"
 	"github.com/zhangxiaoyang/goDataAccess/agent/util"
 	"io"
@@ -34,7 +35,7 @@ func (this *AgentServer) GetOneProxy(url *string, proxy *string) error {
 	}
 	*proxy = fmt.Sprintf("%s", this.rings[domain].Value)
 	this.rings[domain] = this.rings[domain].Next()
-	log.Printf("handle url %s using rule %s, proxy %s\n", *url, domain, *proxy)
+	log.Printf("handle url %s using rule: %s, proxy: %s\n", *url, domain, *proxy)
 	return nil
 }
 
@@ -71,7 +72,9 @@ func (this *AgentServer) readAllProxyToRing() {
 			}
 			this.rings[domain] = ring.New(len(proxies))
 			for _, proxy := range proxies {
-				this.rings[domain].Value = proxy
+				addr := util.NewAddr()
+				json.Unmarshal([]byte(proxy), addr)
+				this.rings[domain].Value = addr.Serialize()
 				this.rings[domain] = this.rings[domain].Next()
 			}
 		}

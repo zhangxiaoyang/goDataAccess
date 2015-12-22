@@ -141,7 +141,7 @@ func (this *Agent) readAllCandidate() []string {
 }
 
 func (this *Agent) isAgentServerOK() bool {
-	_, err := common.NewProxy().GetOneProxy("example.com")
+	_, err := common.NewProxy().GetOneProxy("http://example.com")
 	if err != nil {
 		return false
 	}

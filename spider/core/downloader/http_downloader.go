@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/zhangxiaoyang/goDataAccess/spider/common"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -48,7 +49,7 @@ func (this *HttpDownloader) Download(req *common.Request, config *common.Config)
 
 	resp, err := common.NewCurl(client, req).Do()
 	if err != nil {
-		fmt.Printf("curl %s error %s\n", req.Url, err)
+		log.Printf("curl %s error %s\n", req.Url, err)
 		return nil, err
 	}
 

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/zhangxiaoyang/goDataAccess/agent/core"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -13,14 +14,30 @@ import (
 )
 
 func usage() {
-	fmt.Println("Usage")
-	fmt.Println("go run cli.go [update/u]")
-	fmt.Println("go run cli.go [validate/v] [validateUrl] [succ]")
-	fmt.Println("go run cli.go [serve/s]")
+	fmt.Println("Usage:")
+	fmt.Println("  Step 1: fetching free proxies")
+	fmt.Println("    go run cli.go [update/u]")
+	fmt.Println("  Step 2: picking available proxies which can be used to visit `validateUrl`(response bodies contains `succ`)")
+	fmt.Println("    go run cli.go [validate/v] [validateUrl] [succ]")
+	fmt.Println("  Step 3: RPC service for spiders")
+	fmt.Println("    go run cli.go [serve/s]")
 	fmt.Println()
 }
 
 func main() {
+	for i, _ := range os.Args {
+		if os.Args[i] == "--log" && i+1 < len(os.Args) && os.Args[i+1] != "" {
+			fileName := os.Args[i+1]
+			f, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+			if err != nil {
+				log.Fatalf("error opening file: %v", err)
+			}
+			defer f.Close()
+			log.SetOutput(io.MultiWriter(f, os.Stdout))
+			break
+		}
+	}
+
 	if len(os.Args) > 1 {
 		dbDir := "db/"
 		ruleDir := "rule/"
@@ -35,14 +52,14 @@ func main() {
 		case "u":
 			fallthrough
 		case "update":
-			if len(os.Args) == 2 {
+			if len(os.Args) >= 2 {
 				agent.Update()
 			}
 			return
 		case "v":
 			fallthrough
 		case "validate":
-			if len(os.Args) == 4 {
+			if len(os.Args) >= 4 {
 				validateUrl, succ := os.Args[2], os.Args[3]
 				agent.Validate(validateUrl, succ)
 				return
