@@ -9,6 +9,10 @@ type Addr struct {
 	Port string `json:"port"`
 }
 
+func NewAddr() *Addr {
+	return &Addr{}
+}
+
 func (this *Addr) Serialize() string {
 	return this.IP + ":" + this.Port
 }

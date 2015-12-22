@@ -68,6 +68,11 @@ func (this *Config) SetMaxRetryTimes(maxRetryTimes int) *Config {
 	return this
 }
 
+func (this *Config) SetMaxDepth(maxDepth int) *Config {
+	this.maxDepth = maxDepth
+	return this
+}
+
 func (this *Config) SetLogging(logging bool) *Config {
 	this.logging = logging
 	return this
@@ -80,11 +85,6 @@ func (this *Config) SetHeaders(headers map[string]string) *Config {
 
 func (this *Config) SetSucc(succ string) *Config {
 	this.succ = succ
-	return this
-}
-
-func (this *Config) SetMaxDepth(maxDepth int) *Config {
-	this.maxDepth = maxDepth
 	return this
 }
 
@@ -116,6 +116,10 @@ func (this *Config) GetMaxRetryTimes() int {
 	return this.maxRetryTimes
 }
 
+func (this *Config) GetMaxDepth() int {
+	return this.maxDepth
+}
+
 func (this *Config) GetLogging() bool {
 	return this.logging
 }
@@ -126,8 +130,4 @@ func (this *Config) GetHeaders() map[string]string {
 
 func (this *Config) GetSucc() string {
 	return this.succ
-}
-
-func (this *Config) GetMaxDepth() int {
-	return this.maxDepth
 }

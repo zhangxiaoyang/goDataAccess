@@ -2,6 +2,7 @@
 *.swp
 *.db
 *.bak
+*.log
 db/
 tmp/
 output/

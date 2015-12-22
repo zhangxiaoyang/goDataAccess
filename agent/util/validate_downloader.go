@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/zhangxiaoyang/goDataAccess/spider/common"
@@ -51,6 +52,7 @@ func (this *ValidateDownloader) Download(req *common.Request, config *common.Con
 	if config.GetSucc() != "" && !strings.Contains(resp.Body, config.GetSucc()) {
 		return nil, errors.New(fmt.Sprintf("Invalid response body(succ: %s)", config.GetSucc()))
 	}
-	resp.Body = proxyUrl
+	byteBody, _ := json.Marshal(NewAddr().Deserialize(proxyUrl))
+	resp.Body = string(byteBody)
 	return resp, nil
 }

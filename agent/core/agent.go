@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/zhangxiaoyang/goDataAccess/agent/util"
+	"github.com/zhangxiaoyang/goDataAccess/spider/common"
 	"github.com/zhangxiaoyang/goDataAccess/spider/core/engine"
 	"github.com/zhangxiaoyang/goDataAccess/spider/core/processer"
+	"github.com/zhangxiaoyang/goDataAccess/spider/plugin"
 	"io"
 	"io/ioutil"
 	"log"
@@ -59,8 +61,23 @@ func (this *Agent) Update() {
 	for _, updateRulePath := range updateRulePaths {
 		go func(p string) {
 			defer wg.Done()
-			log.Printf("started %s\n", p)
-			engine.NewQuickEngine(p).SetOutputFile(file).Start()
+
+			if this.isAgentServerOK() {
+				log.Printf("started %s(agent server is ok)\n", p)
+				engine.
+					NewQuickEngine(p).
+					SetOutputFile(file).
+					GetEngine().
+					AddPlugin(plugin.NewProxyPlugin()).
+					Start()
+			} else {
+				log.Printf("started %s(agent server is not ok)\n", p)
+				engine.
+					NewQuickEngine(p).
+					SetOutputFile(file).
+					GetEngine().
+					Start()
+			}
 			log.Printf("finished %s\n", p)
 		}(updateRulePath)
 	}
@@ -85,7 +102,6 @@ func (this *Agent) Validate(validateUrl string, succ string) {
 		SetDownloader(util.NewValidateDownloader(validateUrl, succ)).
 		SetPipeline(util.NewFilePipeline(file)).
 		SetProcesser(processer.NewLazyProcesser()).
-		AddPlugin(plugin.NewProxyPlugin()).
 		Start()
 }
 
@@ -112,7 +128,7 @@ func (this *Agent) readAllCandidate() []string {
 			break
 		}
 
-		addr := &util.Addr{}
+		addr := util.NewAddr()
 		json.Unmarshal([]byte(line), addr)
 		addrs[addr.Serialize()] = true
 	}
@@ -122,4 +138,12 @@ func (this *Agent) readAllCandidate() []string {
 		keys = append(keys, k)
 	}
 	return keys
+}
+
+func (this *Agent) isAgentServerOK() bool {
+	_, err := common.NewProxy().GetOneProxy("example.com")
+	if err != nil {
+		return false
+	}
+	return true
 }

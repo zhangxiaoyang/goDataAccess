@@ -18,6 +18,7 @@ import (
 type QuickEngine struct {
 	quickEngineConfigPath string
 	file                  *os.File
+	logFile               *os.File
 	resetOutput           bool
 }
 
@@ -35,6 +36,15 @@ func (this *QuickEngine) GetEngine() *Engine {
 		SetProcesser(NewQuickEngineProcesser(c)).
 		SetStartUrls(c.StartUrls).
 		SetConfig(c.ToCommonConfig())
+
+	if c.LogFile != "" {
+		var err error
+		this.logFile, err = os.OpenFile(c.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		log.SetOutput(this.logFile)
+		if err != nil {
+			log.Fatal("cannot create log file: %s\n", c.LogFile)
+		}
+	}
 
 	if this.file != nil {
 		return e.AddPipeline(pipeline.NewFilePipeline(this.file))
@@ -55,6 +65,9 @@ func (this *QuickEngine) Start() {
 	if this.file != nil && !this.resetOutput {
 		defer this.file.Close()
 	}
+	if this.logFile != nil {
+		defer this.logFile.Close()
+	}
 	this.GetEngine().Start()
 }
 
@@ -64,6 +77,7 @@ type QuickEngineConfig struct {
 	Rules      []_Rule  `json:"rules"`
 	OutputFile string   `json:"output_file"`
 	Config     _Config  `json:"config"`
+	LogFile    string   `json:"log_file"`
 }
 
 type _Rule struct {
@@ -141,7 +155,6 @@ func (this *QuickEngineConfig) ToCommonConfig() *common.Config {
 		SetLogging(this.Config.Logging).
 		SetHeaders(this.Config.Headers).
 		SetSucc(this.Config.Succ)
-
 	return e
 }
 
