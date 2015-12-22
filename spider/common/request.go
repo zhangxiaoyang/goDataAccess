@@ -8,6 +8,7 @@ import (
 
 type Request struct {
 	Request  *http.Request
+	Depth    int
 	Url      string
 	ProxyUrl string
 	Jar      *cookiejar.Jar
@@ -19,6 +20,7 @@ func NewRequest(url string) *Request {
 		req, _ := http.NewRequest("GET", url, nil)
 		return &Request{
 			Request:  req,
+			Depth:    1,
 			Url:      url,
 			ProxyUrl: "",
 			Jar:      nil,
@@ -28,6 +30,7 @@ func NewRequest(url string) *Request {
 
 	return &Request{
 		Request:  nil,
+		Depth:    1,
 		Url:      url,
 		ProxyUrl: "",
 		Jar:      nil,

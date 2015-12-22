@@ -90,6 +90,7 @@ type _Config struct {
 	ConnectionTimeout   string            `json:"connection_timeout"`
 	MaxIdleConnsPerHost int               `json:"max_idle_conns_per_host"`
 	MaxRetryTimes       int               `json:"max_retry_times"`
+	MaxDepth            int               `json:"max_depth"`
 	Logging             bool              `json:"logging"`
 	Headers             map[string]string `json:"headers"`
 	Succ                string            `json:"succ"`
@@ -136,6 +137,7 @@ func (this *QuickEngineConfig) ToCommonConfig() *common.Config {
 		SetConnectionTimeout(this.stringToDuration(this.Config.ConnectionTimeout)).
 		SetMaxIdleConnsPerHost(this.Config.MaxIdleConnsPerHost).
 		SetMaxRetryTimes(this.Config.MaxRetryTimes).
+		SetMaxDepth(this.Config.MaxDepth).
 		SetLogging(this.Config.Logging).
 		SetHeaders(this.Config.Headers).
 		SetSucc(this.Config.Succ)
@@ -145,6 +147,7 @@ func (this *QuickEngineConfig) ToCommonConfig() *common.Config {
 
 type QuickEngineProcesser struct {
 	config *QuickEngineConfig
+	depth  int
 }
 
 func NewQuickEngineProcesser(config *QuickEngineConfig) *QuickEngineProcesser {

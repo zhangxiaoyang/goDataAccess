@@ -85,6 +85,11 @@ func (this *Engine) Start() {
 }
 
 func (this *Engine) process(req *common.Request) {
+	if req.Depth > this.config.GetMaxDepth() {
+		log.Printf("Skip %s, because depth(%d) > %d\n", req.Url, req.Depth, this.config.GetMaxDepth())
+		return
+	}
+
 	this.hook(plugin.PreDownloaderType, req)
 	resp, err := this.downloader.Download(req, this.config)
 
@@ -107,6 +112,7 @@ func (this *Engine) process(req *common.Request) {
 	log.Printf("generated %d requests from %s\n", len(y.GetAllRequests()), req.Url)
 	for _, r := range y.GetAllRequests() {
 		this.hook(plugin.PreSchedulerType, r)
+		r.Depth = req.Depth + 1
 		this.scheduler.Push(r)
 	}
 

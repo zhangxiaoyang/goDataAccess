@@ -12,6 +12,7 @@ type Config struct {
 	connectionTimeout   time.Duration
 	maxIdleConnsPerHost int
 	maxRetryTimes       int
+	maxDepth            int
 	logging             bool
 	headers             map[string]string
 	succ                string
@@ -26,6 +27,7 @@ func NewConfig() *Config {
 		connectionTimeout:   2 * time.Second,
 		maxIdleConnsPerHost: 10,
 		maxRetryTimes:       2,
+		maxDepth:            1024,
 		logging:             true,
 		headers:             map[string]string{},
 	}
@@ -81,6 +83,11 @@ func (this *Config) SetSucc(succ string) *Config {
 	return this
 }
 
+func (this *Config) SetMaxDepth(maxDepth int) *Config {
+	this.maxDepth = maxDepth
+	return this
+}
+
 func (this *Config) GetConcurrency() int {
 	return this.concurrency
 }
@@ -119,4 +126,8 @@ func (this *Config) GetHeaders() map[string]string {
 
 func (this *Config) GetSucc() string {
 	return this.succ
+}
+
+func (this *Config) GetMaxDepth() int {
+	return this.maxDepth
 }

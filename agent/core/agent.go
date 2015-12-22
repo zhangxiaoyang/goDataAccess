@@ -85,6 +85,7 @@ func (this *Agent) Validate(validateUrl string, succ string) {
 		SetDownloader(util.NewValidateDownloader(validateUrl, succ)).
 		SetPipeline(util.NewFilePipeline(file)).
 		SetProcesser(processer.NewLazyProcesser()).
+		AddPlugin(plugin.NewProxyPlugin()).
 		Start()
 }
 
