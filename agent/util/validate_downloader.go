@@ -1,12 +1,9 @@
 package util
 
 import (
-	"compress/gzip"
 	"errors"
 	"fmt"
 	"github.com/zhangxiaoyang/goDataAccess/spider/common"
-	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -24,9 +21,7 @@ func NewValidateDownloader(validateUrl string, succ string) *ValidateDownloader 
 
 func (this *ValidateDownloader) Download(req *common.Request, config *common.Config) (*common.Response, error) {
 	proxyUrl := req.Url
-
-	req.Url = this.validateUrl
-	req.Request, _ = http.NewRequest("GET", req.Url, nil)
+	req.Request, _ = http.NewRequest("GET", this.validateUrl, nil)
 	for key, value := range config.GetHeaders() {
 		req.Request.Header.Set(key, value)
 	}
@@ -47,41 +42,15 @@ func (this *ValidateDownloader) Download(req *common.Request, config *common.Con
 		},
 	}
 
-	resp, err := client.Do(req.Request)
+	resp, err := common.NewCurl(client, req).Do()
 	if err != nil {
+		fmt.Printf("curl %s error %s\n", req.Url, err)
 		return nil, err
 	}
-	defer resp.Body.Close()
 
-	var body string
-	if resp.StatusCode == 200 {
-		switch resp.Header.Get("Content-Encoding") {
-		case "gzip":
-			reader, _ := gzip.NewReader(resp.Body)
-			for {
-				buf := make([]byte, 1024)
-				n, err := reader.Read(buf)
-				if err != nil && err != io.EOF {
-					return nil, err
-				}
-				if n == 0 {
-					break
-				}
-				body += string(buf)
-			}
-		default:
-			bodyByte, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-			body = string(bodyByte)
-		}
-	} else {
-		return nil, errors.New(fmt.Sprintf("Response StatusCode: %d", resp.StatusCode))
-	}
-
-	if config.GetSucc() != "" && !strings.Contains(body, config.GetSucc()) {
+	if config.GetSucc() != "" && !strings.Contains(resp.Body, config.GetSucc()) {
 		return nil, errors.New(fmt.Sprintf("Invalid response body(succ: %s)", config.GetSucc()))
 	}
-	return common.NewResponse(resp, req.Url, proxyUrl), nil
+	resp.Body = proxyUrl
+	return resp, nil
 }
