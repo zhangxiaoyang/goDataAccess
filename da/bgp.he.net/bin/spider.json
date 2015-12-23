@@ -19,7 +19,7 @@
         "connection_timeout": "2s",
         "concurrency": 500,
         "max_retry_times": 20,
-        "succ": "BGP",
+        "succ": "Domain Name:",
         "headers": {
             "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.35 Safari/537.36"
         }

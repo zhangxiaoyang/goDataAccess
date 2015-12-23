@@ -16,6 +16,15 @@ function init() {
     mkdir -p "$SPLIT"
     mkdir -p "$OUTPUT"
     mkdir -p "$LOG"
+    mkdir -p "$DATA"
+
+    if [ ! -f "$DATA/top-1m.txt" ]
+    then
+        cat > "$DATA/top-1m.txt" <<EOM
+        qq.com
+        163.com
+EOM
+    fi
 }
 
 function split_file()
