@@ -44,17 +44,17 @@ func (this *HttpDownloader) Download(req *common.Request, config *common.Config)
 		client.Jar = req.Jar
 	}
 	if req.Error != nil {
-		return nil, req.Error
+		return common.NewResponse(nil, req.Url, ""), req.Error
 	}
 
 	resp, err := common.NewCurl(client, req).Do()
 	if err != nil {
 		log.Printf("curl %s error %s\n", req.Url, err)
-		return nil, err
+		return resp, err
 	}
 
 	if config.GetSucc() != "" && !strings.Contains(resp.Body, config.GetSucc()) {
-		return nil, errors.New(fmt.Sprintf("Invalid response body(succ: %s)", config.GetSucc()))
+		return resp, errors.New(fmt.Sprintf("Invalid response body(succ: %s)", config.GetSucc()))
 	}
 	return resp, nil
 }

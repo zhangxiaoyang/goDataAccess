@@ -16,7 +16,7 @@ func NewCookiePlugin(getCookieFunc GetCookieFunc) *CookiePlugin {
 }
 
 func (this *CookiePlugin) Do(pluginType PluginType, args ...interface{}) {
-	if pluginType == PreDownloaderType {
+	if pluginType == BeforeDownloaderType {
 		req := args[0].(*common.Request)
 		var err error
 		req.Jar, err = this.getCookieFunc(req)

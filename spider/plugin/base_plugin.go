@@ -3,10 +3,14 @@ package plugin
 type PluginType int
 
 const (
-	PreSchedulerType  = iota
-	PreDownloaderType = iota
-	PreProcesserType  = iota
-	PrePipelineType   = iota
+	AfterSchedulerType   = iota
+	AfterDownloaderType  = iota
+	AfterProcesserType   = iota
+	AfterPipelineType    = iota
+	BeforeSchedulerType  = iota
+	BeforeDownloaderType = iota
+	BeforeProcesserType  = iota
+	BeforePipelineType   = iota
 )
 
 type BasePlugin interface {

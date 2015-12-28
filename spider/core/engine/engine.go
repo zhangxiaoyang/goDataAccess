@@ -90,8 +90,9 @@ func (this *Engine) process(req *common.Request) {
 		return
 	}
 
-	this.hook(plugin.PreDownloaderType, req)
+	this.hook(plugin.BeforeDownloaderType, req, this.config)
 	resp, err := this.downloader.Download(req, this.config)
+	this.hook(plugin.AfterDownloaderType, resp, err)
 
 	if err != nil {
 		log.Printf("downloaded failed(%s)\n", err)
@@ -106,14 +107,16 @@ func (this *Engine) process(req *common.Request) {
 	log.Printf("downloaded ok %s\n", req.Url)
 
 	var y = common.NewYield()
-	this.hook(plugin.PreProcesserType, req)
+	this.hook(plugin.BeforeProcesserType, resp, y)
 	this.processer.Process(resp, y)
+	this.hook(plugin.AfterProcesserType)
 
 	log.Printf("generated %d requests from %s\n", len(y.GetAllRequests()), req.Url)
 	for _, r := range y.GetAllRequests() {
-		this.hook(plugin.PreSchedulerType, r)
 		r.Depth = req.Depth + 1
+		this.hook(plugin.BeforeSchedulerType, r)
 		this.scheduler.Push(r)
+		this.hook(plugin.AfterSchedulerType)
 	}
 
 	if y.GetMerge() {
@@ -123,8 +126,9 @@ func (this *Engine) process(req *common.Request) {
 	}
 	for _, p := range this.pipelines {
 		items := y.GetAllItems()
-		this.hook(plugin.PrePipelineType, items)
+		this.hook(plugin.BeforePipelineType, items, y.GetMerge())
 		p.Pipe(items, y.GetMerge())
+		this.hook(plugin.AfterPipelineType)
 	}
 }
 
@@ -137,8 +141,9 @@ func (this *Engine) retry(req *common.Request) {
 	}
 	if this.retryCache[h] <= this.config.GetMaxRetryTimes() {
 		log.Printf("retry(%d) %s\n", this.retryCache[h], req.Url)
-		this.hook(plugin.PreSchedulerType, req)
+		this.hook(plugin.BeforeSchedulerType, req)
 		this.scheduler.Push(req)
+		this.hook(plugin.AfterSchedulerType)
 	} else {
 		delete(this.retryCache, h)
 		log.Printf("downloaded failed(retried %d times) %s\n", this.config.GetMaxRetryTimes(), req.Url)
@@ -164,16 +169,18 @@ func (this *Engine) hook(pluginType plugin.PluginType, args ...interface{}) {
 
 func (this *Engine) SetStartUrl(url string) *Engine {
 	r := common.NewRequest(url)
-	this.hook(plugin.PreSchedulerType, r)
+	this.hook(plugin.BeforeSchedulerType, r)
 	this.scheduler.Push(r)
+	this.hook(plugin.AfterSchedulerType)
 	return this
 }
 
 func (this *Engine) SetStartUrls(urls []string) *Engine {
 	for _, url := range urls {
 		r := common.NewRequest(url)
-		this.hook(plugin.PreSchedulerType, r)
+		this.hook(plugin.BeforeSchedulerType, r)
 		this.scheduler.Push(r)
+		this.hook(plugin.AfterSchedulerType)
 	}
 	return this
 }

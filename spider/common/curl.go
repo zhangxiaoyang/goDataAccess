@@ -21,7 +21,7 @@ func NewCurl(client *http.Client, req *Request) *Curl {
 func (this *Curl) Do() (*Response, error) {
 	resp, err := this.client.Do(this.req.Request)
 	if err != nil {
-		return nil, err
+		return NewResponse(nil, this.req.Url, ""), err
 	}
 	defer resp.Body.Close()
 
@@ -34,7 +34,7 @@ func (this *Curl) Do() (*Response, error) {
 				buf := make([]byte, 1024)
 				n, err := reader.Read(buf)
 				if err != nil && err != io.EOF {
-					return nil, err
+					return NewResponse(nil, this.req.Url, ""), err
 				}
 				if n == 0 {
 					break
@@ -44,12 +44,12 @@ func (this *Curl) Do() (*Response, error) {
 		default:
 			bodyByte, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				return nil, err
+				return NewResponse(nil, this.req.Url, ""), err
 			}
 			body = string(bodyByte)
 		}
 	} else {
-		return nil, errors.New(fmt.Sprintf("Response StatusCode: %d", resp.StatusCode))
+		return NewResponse(nil, this.req.Url, ""), errors.New(fmt.Sprintf("Response StatusCode: %d", resp.StatusCode))
 	}
 	return NewResponse(resp, this.req.Url, body), nil
 }
