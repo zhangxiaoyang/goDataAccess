@@ -180,7 +180,7 @@ func (this *QuickEngineProcesser) processItems(resp *common.Response, y *common.
 		SetScopeRule(rule.ItemRule.ScopeRule).
 		SetRules(rule.ItemRule.KVRule).
 		SetTrimFunc(TrimFunc).
-		Extract(resp.Body)
+		Extract(resp)
 	for _, item := range items {
 		y.AddItem(item)
 	}
@@ -199,7 +199,7 @@ func (this *QuickEngineProcesser) processRequests(resp *common.Response, y *comm
 		SetScopeRule(rule.RequestRule.ScopeRule).
 		SetRules(rule.RequestRule.KVRule).
 		SetTrimFunc(TrimFunc).
-		Extract(resp.Body)
+		Extract(resp)
 	for _, item := range items {
 		for _, url := range item.GetAll() {
 			if strings.HasPrefix(url, "http://") {

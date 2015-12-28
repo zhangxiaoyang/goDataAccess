@@ -17,12 +17,16 @@ func NewExtractor() *Extractor {
 	return &Extractor{}
 }
 
-func (this *Extractor) Extract(body string) []*common.Item {
+func (this *Extractor) Extract(resp *common.Response) []*common.Item {
 	items := []*common.Item{}
-	scopes := regexp.MustCompile(this.scopeRule).FindAllString(body, -1)
+	scopes := regexp.MustCompile(this.scopeRule).FindAllString(resp.Body, -1)
 	for _, scope := range scopes {
 		item := common.NewItem()
 		for key, rule := range this.kvRule {
+			if key == "_URL_" {
+				item.Set(key, resp.Url)
+				continue
+			}
 			value := regexp.MustCompile(rule).FindStringSubmatch(scope)[1]
 			if this.trimFunc != nil {
 				item.Set(key, this.trimFunc(value))

@@ -24,7 +24,7 @@ func (this *MyProcesser) Process(resp *common.Response, y *common.Yield) {
 		"value": `(?s)value">(.*?)</dd>`,
 	}).
 		SetTrimFunc(extractor.TrimHtmlTags).
-		Extract(resp.Body)
+		Extract(resp)
 
 	for _, item := range items {
 		y.AddItem(item)

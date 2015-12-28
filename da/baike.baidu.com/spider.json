@@ -11,6 +11,7 @@
             "item_rule": {
                 "scope_rule": "(?s)<dt class=\"basicInfo-item name\">.*?</dd>",
                 "kv_rule": {
+                    "_URL_": "",
                     "key": "(?s)name\">(.*?)</dt>",
                     "value": "(?s)value\">(.*?)</dd>"
                 },
