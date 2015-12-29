@@ -92,17 +92,17 @@ func (this *Engine) process(req *common.Request) {
 
 	this.hook(plugin.BeforeDownloaderType, req, this.config)
 	resp, err := this.downloader.Download(req, this.config)
-	this.hook(plugin.AfterDownloaderType, resp, err)
-
 	if err != nil {
 		log.Printf("downloaded failed(%s)\n", err)
-
 		if this.config.GetMaxRetryTimes() > 0 {
-			this.retry(req)
+			this.retry(req, resp, err)
 		} else {
+			this.hook(plugin.AfterDownloaderType, resp, err)
 			log.Printf("downloaded failed(retried %d times) %s\n", this.config.GetMaxRetryTimes(), req.Url)
 		}
 		return
+	} else {
+		this.hook(plugin.AfterDownloaderType, resp, err)
 	}
 	log.Printf("downloaded ok %s\n", req.Url)
 
@@ -132,7 +132,7 @@ func (this *Engine) process(req *common.Request) {
 	}
 }
 
-func (this *Engine) retry(req *common.Request) {
+func (this *Engine) retry(req *common.Request, resp *common.Response, err error) {
 	h := md5.Sum([]byte(req.Url))
 	if _, ok := this.retryCache[h]; ok {
 		this.retryCache[h]++
@@ -145,6 +145,7 @@ func (this *Engine) retry(req *common.Request) {
 		this.scheduler.Push(req)
 		this.hook(plugin.AfterSchedulerType)
 	} else {
+		this.hook(plugin.AfterDownloaderType, resp, err)
 		delete(this.retryCache, h)
 		log.Printf("downloaded failed(retried %d times) %s\n", this.config.GetMaxRetryTimes(), req.Url)
 	}
