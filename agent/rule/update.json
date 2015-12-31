@@ -1,0 +1,103 @@
+{
+    "task_name": "update",
+    "start_urls": [
+        "http://www.cz88.net/proxy",
+        "http://www.kuaidaili.com/free/inha/",
+        "http://www.kuaidaili.com/free/intr/",
+        "http://www.kuaidaili.com/free/outha/",
+        "http://www.kuaidaili.com/free/outtr/",
+        "http://www.proxy360.cn/Region/Brazil",
+        "http://www.proxy360.cn/Region/China",
+        "http://www.proxy360.cn/Region/America",
+        "http://www.proxy360.cn/Region/Taiwan",
+        "http://www.proxy360.cn/Region/Japan",
+        "http://www.proxy360.cn/Region/Thailand",
+        "http://www.proxy360.cn/Region/Vietnam",
+        "http://www.proxy360.cn/Region/bahrein",
+        "http://www.xicidaili.com/nn/",
+        "http://www.xicidaili.com/nt/",
+        "http://www.xicidaili.com/wn/",
+        "http://www.xicidaili.com/wt/"
+    ],
+    "rules": [
+        {
+            "url_match": "http://www.cz88.net",
+            "item_rule": {
+                "scope_rule": "(?s)<li>.*?addr\">.*?</li>",
+                "kv_rule": {
+                    "source": "_URL_",
+                    "ip": "(?s)<div class=\"ip\">(\\d+\\.\\d+\\.\\d+\\.\\d+)</div>",
+                    "port": "(?s)<div class=\"port\">(\\d+)</div>"
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "merge": false
+        },
+        {
+            "url_match": "http://www.kuaidaili.com",
+            "base_source": "http://www.kuaidaili.com",
+            "item_rule": {
+                "scope_rule": "(?s)<tr>.*?<td>.*?</tr>",
+                "kv_rule": {
+                    "source": "_URL_",
+                    "ip": "(?s)<td>(\\d+\\.\\d+\\.\\d+\\.\\d+)</td>",
+                    "port": "(?s)<td>(\\d+)</td>"
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "request_rule": {
+                "scope_rule": "(?s)class=\"active\">.*?</li><li>.*?</li>",
+                "kv_rule": {
+                    "url1": "href=\"(.*?)\""
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "merge": false
+        },
+        {
+            "url_match": "http://www.proxy360.cn",
+            "item_rule": {
+                "scope_rule": "(?s)<div class=\"proxylistitem\" name=\"list_proxy_ip\">.*?</div>",
+                "kv_rule": {
+                    "source": "_URL_",
+                    "ip": "(?s)<span .*?>\\s*?(\\d+\\.\\d+\\.\\d+\\.\\d+)\\s*?</span>",
+                    "port": "(?s)<span .*?>\\s*?(\\d+)\\s*?</span>"
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "merge": false
+        },
+        {
+            "url_match": "http://www.xicidaili.com",
+            "base_source": "http://www.xicidaili.com",
+            "item_rule": {
+                "scope_rule": "(?s)<tr .*?>.*?<td>.*?</tr>",
+                "kv_rule": {
+                    "source": "_URL_",
+                    "ip": "(?s)<td>(\\d+\\.\\d+\\.\\d+\\.\\d+)</td>",
+                    "port": "(?s)<td>(\\d+)</td>"
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "request_rule": {
+                "scope_rule": "(?s)<a class=\"next_page\" rel=\"next\" href=\"(.*?)\">",
+                "kv_rule": {
+                    "source": "_URL_",
+                    "url1": "href=\"(.*?)\""
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "merge": false
+        }
+    ],
+    "config": {
+        "concurrency": 1,
+        "connection_timeout": "20s",
+        "download_timeout": "20s",
+        "max_retry_times": 0,
+        "max_depth": 3,
+        "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.35 Safari/537.36"
+        }
+    }
+}

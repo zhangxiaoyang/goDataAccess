@@ -23,7 +23,7 @@ func (this *Extractor) Extract(resp *common.Response) []*common.Item {
 	for _, scope := range scopes {
 		item := common.NewItem()
 		for key, rule := range this.kvRule {
-			if key == "_URL_" {
+			if rule == "_URL_" {
 				item.Set(key, resp.Url)
 				continue
 			}
