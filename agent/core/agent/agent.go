@@ -3,6 +3,7 @@ package agent
 import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/zhangxiaoyang/goDataAccess/agent/core/updater"
+	"github.com/zhangxiaoyang/goDataAccess/agent/core/validator"
 	"log"
 	"os"
 	"time"
@@ -28,7 +29,7 @@ func (this *Agent) Start() {
 	updater.NewUpdater(this.dbPath, this.rulePath).Start()
 	log.Println("finished updater")
 	log.Println("started validator")
-	//validator.NewValidator().Start()
+	validator.NewValidator(this.dbPath, this.rulePath).Start()
 	log.Println("finished validator")
 
 	updaterTicker := time.NewTicker(24 * time.Hour)
@@ -42,11 +43,11 @@ func (this *Agent) Start() {
 			log.Println("finished updater")
 		case <-validatorTicker.C:
 			log.Println("started validator")
-			//validator.NewValidator().Start()
+			validator.NewValidator(this.dbPath, this.rulePath).Start()
 			log.Println("finished validator")
 		case <-quit:
 			updaterTicker.Stop()
-			//validatorTicker.Stop()
+			validatorTicker.Stop()
 			return
 		}
 	}

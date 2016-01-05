@@ -82,6 +82,7 @@ type QuickEngineConfig struct {
 
 type _Rule struct {
 	UrlMatch    string       `json:"url_match"`
+	Succ        string       `json:"succ"`
 	BaseUrl     string       `json:"base_url"`
 	ItemRule    _ItemRule    `json:"item_rule"`
 	RequestRule _RequestRule `json:"request_rule"`
@@ -215,6 +216,10 @@ func (this *QuickEngineProcesser) Process(resp *common.Response, y *common.Yield
 	common.Try(func() {
 		for _, rule := range this.config.Rules {
 			if regexp.MustCompile(rule.UrlMatch).MatchString(resp.Url) {
+				if rule.Succ != "" && !strings.Contains(resp.Body, rule.Succ) {
+					log.Printf("cannot find succ string:%s", rule.Succ)
+					break
+				}
 				if rule.ItemRule.ScopeRule != "" {
 					this.processItems(resp, y, rule)
 				}

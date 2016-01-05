@@ -9,13 +9,11 @@ import (
 	"github.com/zhangxiaoyang/goDataAccess/spider/plugin"
 	"log"
 	"path"
-	"time"
 )
 
 type Updater struct {
-	dbPath     string
-	rulePath   string
-	updateTime time.Duration
+	dbPath   string
+	rulePath string
 }
 
 func NewUpdater(dbPath string, rulePath string) *Updater {
@@ -26,6 +24,7 @@ func NewUpdater(dbPath string, rulePath string) *Updater {
 }
 
 func (this *Updater) Start() {
+	return
 	ruleFilePath := path.Join(this.rulePath, "update.json")
 	dbFilePath := path.Join(this.dbPath, "agent.db")
 	db, err := sql.Open("sqlite3", dbFilePath)
