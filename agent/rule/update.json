@@ -18,9 +18,9 @@
         "http://www.xicidaili.com/nt/",
         "http://www.xicidaili.com/wn/",
         "http://www.xicidaili.com/wt/",
-        "http://www.shifengsoft.com/get.php?tqsl=5000",
-        "http://www.89ip.cn/tiqu.php?sxb=&tqsl=5000",
-        "http://www.66ip.cn/mo.php?sxb=&tqsl=5000"
+        "http://www.shifengsoft.com/get.php?tqsl=2000",
+        "http://www.89ip.cn/tiqu.php?sxb=&tqsl=2000",
+        "http://www.66ip.cn/mo.php?sxb=&tqsl=2000"
     ],
     "rules": [
         {
@@ -95,7 +95,7 @@
         {
             "url_match": "http://www.shifengsoft.com",
             "item_rule": {
-                "scope_rule": "(?s).*",
+                "scope_rule": "(?s)\\d+\\.\\d+\\.\\d+\\.\\d+:\\d+",
                 "kv_rule": {
                     "source": "_URL_",
                     "ip": "(\\d+\\.\\d+\\.\\d+\\.\\d+):\\d+",
@@ -108,7 +108,7 @@
         {
             "url_match": "http://www.89ip.cn",
             "item_rule": {
-                "scope_rule": "(?s).*",
+                "scope_rule": "(?s)\\d+\\.\\d+\\.\\d+\\.\\d+:\\d+",
                 "kv_rule": {
                     "source": "_URL_",
                     "ip": "(\\d+\\.\\d+\\.\\d+\\.\\d+):\\d+",
@@ -121,7 +121,7 @@
         {
             "url_match": "http://www.66ip.cn",
             "item_rule": {
-                "scope_rule": "(?s).*",
+                "scope_rule": "(?s)\\d+\\.\\d+\\.\\d+\\.\\d+:\\d+",
                 "kv_rule": {
                     "source": "_URL_",
                     "ip": "(\\d+\\.\\d+\\.\\d+\\.\\d+):\\d+",
@@ -134,8 +134,8 @@
     ],
     "config": {
         "concurrency": 20,
-        "connection_timeout": "30s",
-        "download_timeout": "30s",
+        "connection_timeout": "20s",
+        "download_timeout": "20s",
         "max_retry_times": 0,
         "max_depth": 1,
         "headers": {

@@ -18,9 +18,9 @@
         }
     ],
     "config": {
-        "concurrency": 1000,
-        "connection_timeout": "20s",
-        "download_timeout": "20s",
+        "concurrency": 10000,
+        "connection_timeout": "10s",
+        "download_timeout": "10s",
         "max_retry_times": 0,
         "headers": {
             "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.35 Safari/537.36"
