@@ -1,21 +1,26 @@
 {
     "task_name": "validate",
     "start_urls": [
-        "http://www.baidu.com",
-        "http://www.qq.com"
+        "http://m.baidu.com"
     ],
     "rules": [
-        {   
-            "url_match": "http://www.baidu.com",
-            "succ": "百度一下"
-        },
         {
-            "url_match": "http://www.baidu.com",
-            "succ": "腾讯首页"
-        }   
-    ],  
+            "url_match": "http://m.baidu.com",
+            "item_rule": {
+                "scope_rule": "^.*",
+                "kv_rule": {
+                    "ip": "\"proxy\":\"(\\d+\\.\\d+\\.\\d+\\.\\d+):\\d+",
+                    "port": "\"proxy\":\"\\d+\\.\\d+\\.\\d+\\.\\d+:(\\d+)",
+                    "domain": "\"domain\":\"(.*?)\""
+                }
+            },
+            "succ": "百度一下"
+        }
+    ],
     "config": {
-        "concurrency": 10000,
+        "concurrency": 1000,
+        "connection_timeout": "20s",
+        "download_timeout": "20s",
         "max_retry_times": 0,
         "headers": {
             "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.35 Safari/537.36"

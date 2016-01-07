@@ -1,8 +1,8 @@
 package updater
 
 import (
-	"database/sql"
 	"fmt"
+	"github.com/zhangxiaoyang/goDataAccess/agent/util"
 	"github.com/zhangxiaoyang/goDataAccess/spider/common"
 	"github.com/zhangxiaoyang/goDataAccess/spider/core/engine"
 	"github.com/zhangxiaoyang/goDataAccess/spider/core/pipeline"
@@ -24,29 +24,24 @@ func NewUpdater(dbPath string, rulePath string) *Updater {
 }
 
 func (this *Updater) Start() {
-	return
 	ruleFilePath := path.Join(this.rulePath, "update.json")
 	dbFilePath := path.Join(this.dbPath, "agent.db")
-	db, err := sql.Open("sqlite3", dbFilePath)
-	log.Println(ruleFilePath)
+	tableName := `"update"`
+
+	db, err := util.InitTable(fmt.Sprintf(
+		"CREATE TABLE IF NOT EXISTS %s(ip TEXT, port TEXT, source TEXT, level INTEGER)",
+		tableName,
+	), dbFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
-
-	tableName := `"update"`
-	_, err = db.Exec(fmt.Sprintf(
-		"CREATE TABLE IF NOT EXISTS %s(ip text, port text, source text); delete from %s",
-		tableName,
-		tableName,
-	))
-	if err != nil {
-		log.Fatal(err)
-	}
+	level := util.GetLastLevel(tableName, db) + 1
 
 	e := engine.
 		NewQuickEngine(ruleFilePath).
 		GetEngine().
+		AddPlugin(util.NewAddLevelPlugin(level)).
 		SetPipeline(pipeline.NewSqlPipeline(db, tableName))
 
 	var ok bool

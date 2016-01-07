@@ -17,7 +17,10 @@
         "http://www.xicidaili.com/nn/",
         "http://www.xicidaili.com/nt/",
         "http://www.xicidaili.com/wn/",
-        "http://www.xicidaili.com/wt/"
+        "http://www.xicidaili.com/wt/",
+        "http://www.shifengsoft.com/get.php?tqsl=5000",
+        "http://www.89ip.cn/tiqu.php?sxb=&tqsl=5000",
+        "http://www.66ip.cn/mo.php?sxb=&tqsl=5000"
     ],
     "rules": [
         {
@@ -35,7 +38,7 @@
         },
         {
             "url_match": "http://www.kuaidaili.com",
-            "base_source": "http://www.kuaidaili.com",
+            "base_url": "http://www.kuaidaili.com",
             "item_rule": {
                 "scope_rule": "(?s)<tr>.*?<td>.*?</tr>",
                 "kv_rule": {
@@ -69,7 +72,7 @@
         },
         {
             "url_match": "http://www.xicidaili.com",
-            "base_source": "http://www.xicidaili.com",
+            "base_url": "http://www.xicidaili.com",
             "item_rule": {
                 "scope_rule": "(?s)<tr .*?>.*?<td>.*?</tr>",
                 "kv_rule": {
@@ -88,14 +91,53 @@
                 "trim_func": "trim_html_tags"
             },
             "merge": false
+        },
+        {
+            "url_match": "http://www.shifengsoft.com",
+            "item_rule": {
+                "scope_rule": "(?s).*",
+                "kv_rule": {
+                    "source": "_URL_",
+                    "ip": "(\\d+\\.\\d+\\.\\d+\\.\\d+):\\d+",
+                    "port": "\\d+\\.\\d+\\.\\d+\\.\\d+:(\\d+)"
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "merge": false
+        },
+        {
+            "url_match": "http://www.89ip.cn",
+            "item_rule": {
+                "scope_rule": "(?s).*",
+                "kv_rule": {
+                    "source": "_URL_",
+                    "ip": "(\\d+\\.\\d+\\.\\d+\\.\\d+):\\d+",
+                    "port": "\\d+\\.\\d+\\.\\d+\\.\\d+:(\\d+)"
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "merge": false
+        },
+        {
+            "url_match": "http://www.66ip.cn",
+            "item_rule": {
+                "scope_rule": "(?s).*",
+                "kv_rule": {
+                    "source": "_URL_",
+                    "ip": "(\\d+\\.\\d+\\.\\d+\\.\\d+):\\d+",
+                    "port": "\\d+\\.\\d+\\.\\d+\\.\\d+:(\\d+)"
+                },
+                "trim_func": "trim_html_tags"
+            },
+            "merge": false
         }
     ],
     "config": {
-        "concurrency": 1,
-        "connection_timeout": "20s",
-        "download_timeout": "20s",
+        "concurrency": 20,
+        "connection_timeout": "30s",
+        "download_timeout": "30s",
         "max_retry_times": 0,
-        "max_depth": 3,
+        "max_depth": 1,
         "headers": {
             "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.35 Safari/537.36"
         }

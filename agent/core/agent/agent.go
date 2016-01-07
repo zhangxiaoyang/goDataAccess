@@ -25,29 +25,29 @@ func NewAgent(dbPath string, rulePath string) *Agent {
 }
 
 func (this *Agent) Start() {
+	u := updater.NewUpdater(this.dbPath, this.rulePath)
+	v := validator.NewValidator(this.dbPath, this.rulePath)
+
 	log.Println("started updater")
-	updater.NewUpdater(this.dbPath, this.rulePath).Start()
+	u.Start()
 	log.Println("finished updater")
 	log.Println("started validator")
-	validator.NewValidator(this.dbPath, this.rulePath).Start()
+	v.Start()
 	log.Println("finished validator")
 
-	updaterTicker := time.NewTicker(24 * time.Hour)
-	validatorTicker := time.NewTicker(30 * time.Minute)
+	ticker := time.NewTicker(15 * time.Minute)
 	quit := make(chan struct{})
 	for {
 		select {
-		case <-updaterTicker.C:
+		case <-ticker.C:
 			log.Println("started updater")
-			updater.NewUpdater(this.dbPath, this.rulePath).Start()
+			u.Start()
 			log.Println("finished updater")
-		case <-validatorTicker.C:
 			log.Println("started validator")
-			validator.NewValidator(this.dbPath, this.rulePath).Start()
+			v.Start()
 			log.Println("finished validator")
 		case <-quit:
-			updaterTicker.Stop()
-			validatorTicker.Stop()
+			ticker.Stop()
 			return
 		}
 	}

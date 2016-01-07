@@ -17,6 +17,7 @@ func main() {
 			}
 			defer f.Close()
 			log.SetOutput(io.MultiWriter(f, os.Stdout))
+			log.SetFlags(log.LstdFlags | log.Lshortfile)
 			break
 		}
 	}
