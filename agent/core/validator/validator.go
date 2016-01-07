@@ -54,7 +54,7 @@ func (this *Validator) Start() {
 }
 
 func (this *Validator) genRequests(urls []string, tableName string, level int, db *sql.DB) []*common.Request {
-	proxies := this.getProxyByLevel(tableName, db)
+	proxies, _ := util.GetLastProxies(tableName, db)
 	reqs := []*common.Request{}
 	for _, url := range urls {
 		for _, proxy := range proxies {
@@ -64,29 +64,4 @@ func (this *Validator) genRequests(urls []string, tableName string, level int, d
 		}
 	}
 	return reqs
-}
-
-func (this *Validator) getProxyByLevel(tableName string, db *sql.DB) []string {
-	proxies := []string{}
-	level := util.GetLastLevel(tableName, db)
-
-	rows, err := db.Query(fmt.Sprintf(
-		"SELECT ip, port FROM %s WHERE level=%d",
-		tableName,
-		level,
-	))
-	if err == nil {
-		defer rows.Close()
-		for rows.Next() {
-			var ip string
-			var port string
-			err := rows.Scan(&ip, &port)
-			if err == nil {
-				proxies = append(proxies, fmt.Sprintf("%s:%s", ip, port))
-			}
-		}
-	} else {
-		log.Fatal(err)
-	}
-	return proxies
 }

@@ -3,6 +3,7 @@ package util
 import (
 	"database/sql"
 	"fmt"
+	"log"
 )
 
 func InitTable(initSql string, dbFilePath string) (*sql.DB, error) {
@@ -30,4 +31,29 @@ func GetLastLevel(tableName string, db *sql.DB) int {
 		}
 	}
 	return level
+}
+
+func GetLastProxies(tableName string, db *sql.DB) ([]string, int) {
+	proxies := []string{}
+	level := GetLastLevel(tableName, db)
+
+	rows, err := db.Query(fmt.Sprintf(
+		"SELECT ip, port FROM %s WHERE level=%d",
+		tableName,
+		level,
+	))
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var ip string
+			var port string
+			err := rows.Scan(&ip, &port)
+			if err == nil {
+				proxies = append(proxies, fmt.Sprintf("%s:%s", ip, port))
+			}
+		}
+	} else {
+		log.Fatal(err)
+	}
+	return proxies, level
 }

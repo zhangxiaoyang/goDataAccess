@@ -16,40 +16,44 @@ import (
 )
 
 type QuickEngine struct {
-	quickEngineConfigPath string
-	file                  *os.File
-	logFile               *os.File
-	resetOutput           bool
+	quickEngineConfig *QuickEngineConfig
+	file              *os.File
+	logFile           *os.File
+	resetOutput       bool
 }
 
 func NewQuickEngine(quickEngineConfigPath string) *QuickEngine {
-	return &QuickEngine{
-		quickEngineConfigPath: quickEngineConfigPath,
+	qe := &QuickEngine{
 		file:        nil,
 		resetOutput: false,
 	}
+	qe.quickEngineConfig = NewQuickEngineConfig(quickEngineConfigPath)
+	return qe
+}
+
+func (this *QuickEngine) GetQuickEngineConfig() *QuickEngineConfig {
+	return this.quickEngineConfig
 }
 
 func (this *QuickEngine) GetEngine() *Engine {
-	c := NewQuickEngineConfig(this.quickEngineConfigPath)
-	e := NewEngine(c.TaskName).
-		SetProcesser(NewQuickEngineProcesser(c)).
-		SetStartUrls(c.StartUrls).
-		SetConfig(c.ToCommonConfig())
+	e := NewEngine(this.quickEngineConfig.TaskName).
+		SetProcesser(NewQuickEngineProcesser(this.quickEngineConfig)).
+		SetStartUrls(this.quickEngineConfig.StartUrls).
+		SetConfig(this.quickEngineConfig.ToCommonConfig())
 
-	if c.LogFile != "" {
+	if this.quickEngineConfig.LogFile != "" {
 		var err error
-		this.logFile, err = os.OpenFile(c.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		this.logFile, err = os.OpenFile(this.quickEngineConfig.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		log.SetOutput(this.logFile)
 		if err != nil {
-			log.Fatal("cannot create log file: %s\n", c.LogFile)
+			log.Fatal("cannot create log file: %s\n", this.quickEngineConfig.LogFile)
 		}
 	}
 
 	if this.file != nil {
 		return e.AddPipeline(pipeline.NewFilePipeline(this.file))
-	} else if c.OutputFile != "" {
-		this.file, _ = os.Create(c.OutputFile)
+	} else if this.quickEngineConfig.OutputFile != "" {
+		this.file, _ = os.Create(this.quickEngineConfig.OutputFile)
 		return e.AddPipeline(pipeline.NewFilePipeline(this.file))
 	}
 	return e.AddPipeline(pipeline.NewConsolePipeline())

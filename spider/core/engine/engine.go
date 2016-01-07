@@ -45,6 +45,7 @@ func (this *Engine) Start() {
 		log.Printf("[engine.go] took %s\n", time.Since(startedTime))
 	}()
 
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Printf("started\n")
 	log.Printf("config: %+v", this.config)
 	log.Printf("scheduler: %s", reflect.TypeOf(this.scheduler).Elem().Name())
@@ -97,12 +98,12 @@ func (this *Engine) process(req *common.Request) {
 		if this.config.GetMaxRetryTimes() > 0 {
 			this.retry(req, resp, err)
 		} else {
-			this.hook(plugin.AfterDownloaderType, resp, err)
+			this.hook(plugin.AfterDownloaderType, resp, err, req)
 			log.Printf("downloaded failed(retried %d times) %s\n", this.config.GetMaxRetryTimes(), req.Url)
 		}
 		return
 	} else {
-		this.hook(plugin.AfterDownloaderType, resp, err)
+		this.hook(plugin.AfterDownloaderType, resp, err, req)
 	}
 	log.Printf("downloaded ok %s\n", req.Url)
 
@@ -145,7 +146,7 @@ func (this *Engine) retry(req *common.Request, resp *common.Response, err error)
 		this.scheduler.Push(req)
 		this.hook(plugin.AfterSchedulerType)
 	} else {
-		this.hook(plugin.AfterDownloaderType, resp, err)
+		this.hook(plugin.AfterDownloaderType, resp, err, req)
 		delete(this.retryCache, h)
 		log.Printf("downloaded failed(retried %d times) %s\n", this.config.GetMaxRetryTimes(), req.Url)
 	}
@@ -179,6 +180,15 @@ func (this *Engine) SetStartUrl(url string) *Engine {
 func (this *Engine) SetStartUrls(urls []string) *Engine {
 	for _, url := range urls {
 		r := common.NewRequest(url)
+		this.hook(plugin.BeforeSchedulerType, r)
+		this.scheduler.Push(r)
+		this.hook(plugin.AfterSchedulerType)
+	}
+	return this
+}
+
+func (this *Engine) SetStartRequests(reqs []*common.Request) *Engine {
+	for _, r := range reqs {
 		this.hook(plugin.BeforeSchedulerType, r)
 		this.scheduler.Push(r)
 		this.hook(plugin.AfterSchedulerType)

@@ -4,6 +4,7 @@ import (
 	"compress/gzip"
 	"errors"
 	"fmt"
+	"golang.org/x/net/html/charset"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -27,8 +28,7 @@ func (this *Curl) Do() (*Response, error) {
 
 	var body string
 	if resp.StatusCode == 200 {
-		switch resp.Header.Get("Content-Encoding") {
-		case "gzip":
+		if resp.Header.Get("Content-Encoding") == "gzip" {
 			reader, _ := gzip.NewReader(resp.Body)
 			for {
 				buf := make([]byte, 1024)
@@ -41,8 +41,14 @@ func (this *Curl) Do() (*Response, error) {
 				}
 				body += string(buf)
 			}
-		default:
-			bodyByte, err := ioutil.ReadAll(resp.Body)
+		} else {
+			contentType := resp.Header.Get("Content-Type")
+			newBody, err := charset.NewReader(resp.Body, contentType)
+			if err != nil {
+				return NewResponse(nil, this.req.Url, ""), err
+			}
+
+			bodyByte, err := ioutil.ReadAll(newBody)
 			if err != nil {
 				return NewResponse(nil, this.req.Url, ""), err
 			}
