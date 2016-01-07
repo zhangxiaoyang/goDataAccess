@@ -1,31 +1,36 @@
 package common
 
 import (
-	"log"
-	"net/rpc"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
 )
 
-type Proxy struct {
-	address string
-}
+type Proxy struct{}
 
 func NewProxy() *Proxy {
-	return &Proxy{address: "127.0.0.1:1234"}
+	return &Proxy{}
+}
+
+type JsonResp struct {
+	Level  int    `json:"level"`
+	Num    int    `json:"num"`
+	Result string `json:"result"`
 }
 
 func (this *Proxy) GetOneProxy(url string) (string, error) {
-	client, err := rpc.DialHTTP("tcp", this.address)
+	resp, err := http.Get("http://127.0.0.1:1234/getOneProxy")
 	if err != nil {
-		log.Printf("dialing error %s\n", err)
 		return "", err
 	}
-	defer client.Close()
+	defer resp.Body.Close()
 
-	var proxy string
-	err = client.Call("AgentServer.GetOneProxy", &url, &proxy)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("proxy error %s\n", err)
 		return "", err
 	}
-	return proxy, nil
+
+	var jsonResp JsonResp
+	json.Unmarshal(body, &jsonResp)
+	return jsonResp.Result, nil
 }
