@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"time"
 )
 
 func InitTable(initSql string, dbFilePath string) (*sql.DB, error) {
@@ -21,15 +22,23 @@ func InitTable(initSql string, dbFilePath string) (*sql.DB, error) {
 
 func GetLastLevel(tableName string, db *sql.DB) int {
 	level := 0
-	rows, err := db.Query(fmt.Sprintf(
-		"SELECT level FROM %s ORDER BY level DESC LIMIT 1", tableName,
-	))
-	if err == nil {
-		defer rows.Close()
-		for rows.Next() {
-			rows.Scan(&level)
+	var rows *sql.Rows
+	var err error
+	for {
+		rows, err = db.Query(fmt.Sprintf(
+			"SELECT level FROM %s ORDER BY level DESC LIMIT 1", tableName,
+		))
+		if err != nil {
+			log.Println(err)
+			time.Sleep(1 * time.Second)
+		} else {
 			break
 		}
+	}
+	defer rows.Close()
+	for rows.Next() {
+		rows.Scan(&level)
+		break
 	}
 	return level
 }
@@ -38,23 +47,29 @@ func GetLastProxies(tableName string, db *sql.DB) ([]string, int) {
 	proxies := []string{}
 	level := GetLastLevel(tableName, db)
 
-	rows, err := db.Query(fmt.Sprintf(
-		"SELECT ip, port FROM %s WHERE level=%d",
-		tableName,
-		level,
-	))
-	if err == nil {
-		defer rows.Close()
-		for rows.Next() {
-			var ip string
-			var port string
-			err := rows.Scan(&ip, &port)
-			if err == nil {
-				proxies = append(proxies, fmt.Sprintf("%s:%s", ip, port))
-			}
+	var rows *sql.Rows
+	var err error
+	for {
+		rows, err = db.Query(fmt.Sprintf(
+			"SELECT ip, port FROM %s WHERE level=%d",
+			tableName,
+			level,
+		))
+		if err != nil {
+			log.Println(err)
+			time.Sleep(1 * time.Second)
+		} else {
+			break
 		}
-	} else {
-		log.Fatal(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var ip string
+		var port string
+		err := rows.Scan(&ip, &port)
+		if err == nil {
+			proxies = append(proxies, fmt.Sprintf("%s:%s", ip, port))
+		}
 	}
 	return proxies, level
 }
@@ -65,32 +80,36 @@ func GetLastProxiesByDomain(tableName string, domain string, db *sql.DB) ([]stri
 
 	var rows *sql.Rows
 	var err error
-	if domain == "" {
-		rows, err = db.Query(fmt.Sprintf(
-			"SELECT ip, port, domain FROM %s WHERE level=%d",
-			tableName,
-			level,
-		))
-	} else {
-		rows, err = db.Query(fmt.Sprintf(
-			"SELECT ip, port, domain FROM %s WHERE level=%d AND domain='%s'",
-			tableName,
-			level,
-			domain,
-		))
-	}
-	if err == nil {
-		defer rows.Close()
-		for rows.Next() {
-			var ip string
-			var port string
-			err := rows.Scan(&ip, &port, &domain)
-			if err == nil {
-				proxies = append(proxies, fmt.Sprintf("%s:%s", ip, port))
-			}
+	for {
+		if domain == "" {
+			rows, err = db.Query(fmt.Sprintf(
+				"SELECT ip, port, domain FROM %s WHERE level=%d",
+				tableName,
+				level,
+			))
+		} else {
+			rows, err = db.Query(fmt.Sprintf(
+				"SELECT ip, port, domain FROM %s WHERE level=%d AND domain='%s'",
+				tableName,
+				level,
+				domain,
+			))
 		}
-	} else {
-		log.Fatal(err)
+		if err != nil {
+			log.Println(err)
+			time.Sleep(1 * time.Second)
+		} else {
+			break
+		}
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var ip string
+		var port string
+		err := rows.Scan(&ip, &port, &domain)
+		if err == nil {
+			proxies = append(proxies, fmt.Sprintf("%s:%s", ip, port))
+		}
 	}
 	return proxies, domain, level
 }
