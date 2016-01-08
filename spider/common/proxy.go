@@ -2,8 +2,10 @@ package common
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 )
 
 type Proxy struct{}
@@ -13,13 +15,12 @@ func NewProxy() *Proxy {
 }
 
 type JsonResp struct {
-	Level  int    `json:"level"`
 	Num    int    `json:"num"`
 	Result string `json:"result"`
 }
 
-func (this *Proxy) GetOneProxy(url string) (string, error) {
-	resp, err := http.Get("http://127.0.0.1:1234/getOneProxy")
+func (this *Proxy) GetOneProxy(u string) (string, error) {
+	resp, err := http.Get("http://127.0.0.1:1234/getOneProxy?url=" + url.QueryEscape(u))
 	if err != nil {
 		return "", err
 	}
@@ -32,5 +33,8 @@ func (this *Proxy) GetOneProxy(url string) (string, error) {
 
 	var jsonResp JsonResp
 	json.Unmarshal(body, &jsonResp)
+	if jsonResp.Num <= 0 {
+		return "", errors.New("Agent donot have enough proxies!")
+	}
 	return jsonResp.Result, nil
 }

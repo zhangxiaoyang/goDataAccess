@@ -7,6 +7,7 @@ import (
 	"github.com/zhangxiaoyang/goDataAccess/spider/common"
 	"github.com/zhangxiaoyang/goDataAccess/spider/core/engine"
 	"github.com/zhangxiaoyang/goDataAccess/spider/plugin"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -20,14 +21,22 @@ var gAuth = &Auth{Jar: map[string]*cookiejar.Jar{}, IsAuthed: map[string]bool{}}
 var gConfig *common.Config
 
 func main() {
-	if len(os.Args) < 3 {
+
+	if len(os.Args) < 5 {
 		log.Printf("lost argument")
 		return
 	}
 
-	configFilePath, inFilePath, outFilePath := os.Args[1], os.Args[2], os.Args[3]
+	configFilePath, inFilePath, outFilePath, statusFilePath, logFilePath :=
+		os.Args[1], os.Args[2], os.Args[3], os.Args[4], os.Args[5]
 	outFile, _ := os.Create(outFilePath)
 	defer outFile.Close()
+	statusFile, _ := os.Create(statusFilePath)
+	defer statusFile.Close()
+	logFile, _ := os.Create(logFilePath)
+	defer logFile.Close()
+	log.SetOutput(io.MultiWriter(logFile, os.Stdout))
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	log.Printf("load urls from %s", inFilePath)
 	domains := util.LoadUrlsFromFile(inFilePath)
@@ -44,7 +53,8 @@ func main() {
 	gConfig = e.GetConfig()
 	e.SetStartUrls(urls).
 		AddPlugin(plugin.NewProxyPlugin()).
-		AddPlugin(plugin.NewCookiePlugin(GetCookieFunc))
+		AddPlugin(plugin.NewCookiePlugin(GetCookieFunc)).
+		AddPlugin(plugin.NewStatusPlugin(statusFile))
 	e.Start()
 }
 

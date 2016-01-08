@@ -11,12 +11,11 @@
             }
         }
     ],
-    "output_file": "bgp.he.net.txt",
     "config": {
         "polling_time": "100ms",
         "wait_time": "100ms",
-        "download_timeout": "5s",
-        "connection_timeout": "2s",
+        "download_timeout": "20s",
+        "connection_timeout": "20s",
         "concurrency": 500,
         "max_retry_times": 20,
         "succ": "Domain Name:",
