@@ -20,18 +20,20 @@
         {
             "url_match": "http://bgp.he.net",
             "item_rule": {
-                "scope_rule": "(?s).*",
+                "scope_rule": "^.*",
                 "kv_rule": {
-                    "html": "(?s)(.*)"
+                    "ip": "\"proxy\":\"(\\d+\\.\\d+\\.\\d+\\.\\d+):\\d+",
+                    "port": "\"proxy\":\"\\d+\\.\\d+\\.\\d+\\.\\d+:(\\d+)",
+                    "domain": "\"domain\":\"(.*?)\""
                 }
             },
-            "succ": "Domain Name:"
+            "succ": "Hurricane Electric BGP Toolkit"
         }
     ],
     "config": {
         "concurrency": 10000,
-        "connection_timeout": "10s",
-        "download_timeout": "10s",
+        "connection_timeout": "20s",
+        "download_timeout": "20s",
         "max_retry_times": 0,
         "headers": {
             "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.35 Safari/537.36"

@@ -9,7 +9,9 @@ import (
 	"github.com/zhangxiaoyang/goDataAccess/spider/core/engine"
 	"github.com/zhangxiaoyang/goDataAccess/spider/core/pipeline"
 	"log"
+	"math/rand"
 	"path"
+	"time"
 )
 
 type Validator struct {
@@ -63,5 +65,15 @@ func (this *Validator) genRequests(urls []string, tableName string, level int, d
 			reqs = append(reqs, req)
 		}
 	}
+
+	rand.Seed(time.Now().Unix())
+	this.Shuffle(reqs)
 	return reqs
+}
+
+func (this *Validator) Shuffle(reqs []*common.Request) {
+	for i := range reqs {
+		j := rand.Intn(i + 1)
+		reqs[i], reqs[j] = reqs[j], reqs[i]
+	}
 }
