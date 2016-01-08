@@ -58,11 +58,18 @@ func (this *Server) Start() {
 }
 
 func (this *Server) getAllProxies(w http.ResponseWriter, r *http.Request) {
-	proxies, level := util.GetLastProxies(this.tableName, this.db)
+	url := r.URL.Query().Get("url")
+	domain := ""
+	if url != "" {
+		domain = util.ExtractDomain(url)
+	}
+
+	proxies, domain, level := util.GetLastProxiesByDomain(this.tableName, domain, this.db)
 	result := map[string]interface{}{
-		"num":    len(proxies),
-		"level":  level,
-		"result": proxies,
+		"num":          len(proxies),
+		"level":        level,
+		"domain_match": domain,
+		"result":       proxies,
 	}
 	jsonResp, _ := json.Marshal(result)
 	io.WriteString(w, string(jsonResp))
@@ -74,11 +81,18 @@ func (this *Server) random(min int, max int) int {
 }
 
 func (this *Server) getOneProxy(w http.ResponseWriter, r *http.Request) {
-	proxies, level := util.GetLastProxies(this.tableName, this.db)
+	url := r.URL.Query().Get("url")
+	domain := ""
+	if url != "" {
+		domain = util.ExtractDomain(url)
+	}
+
+	proxies, domain, level := util.GetLastProxiesByDomain(this.tableName, domain, this.db)
 	result := map[string]interface{}{
-		"num":    1,
-		"level":  level,
-		"result": proxies[this.random(0, len(proxies))],
+		"num":          1,
+		"level":        level,
+		"domain_match": domain,
+		"result":       proxies[this.random(0, len(proxies))],
 	}
 	jsonResp, _ := json.Marshal(result)
 	io.WriteString(w, string(jsonResp))
