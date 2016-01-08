@@ -111,7 +111,7 @@ func (this *Server) getOneProxy(w http.ResponseWriter, r *http.Request) {
 			"num":          len(proxies),
 			"level":        level,
 			"domain_match": domain,
-			"result":       proxies,
+			"result":       proxies[this.random(0, len(proxies))],
 		}
 	}
 	jsonResp, _ := json.Marshal(result)
