@@ -108,7 +108,7 @@ func (this *Server) getOneProxy(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		result = map[string]interface{}{
-			"num":          len(proxies),
+			"num":          1,
 			"level":        level,
 			"domain_match": domain,
 			"result":       proxies[this.random(0, len(proxies))],
