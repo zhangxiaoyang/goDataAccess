@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"regexp"
-	"time"
 )
 
 func InitTable(initSql string, dbFilePath string) (*sql.DB, error) {
@@ -22,18 +21,11 @@ func InitTable(initSql string, dbFilePath string) (*sql.DB, error) {
 
 func GetLastLevel(tableName string, db *sql.DB) int {
 	level := 0
-	var rows *sql.Rows
-	var err error
-	for {
-		rows, err = db.Query(fmt.Sprintf(
-			"SELECT level FROM %s ORDER BY level DESC LIMIT 1", tableName,
-		))
-		if err != nil {
-			log.Println(err)
-			time.Sleep(1 * time.Second)
-		} else {
-			break
-		}
+	rows, err := db.Query(fmt.Sprintf(
+		"SELECT level FROM %s ORDER BY level DESC LIMIT 1", tableName,
+	))
+	if err != nil {
+		log.Println(err)
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -47,20 +39,13 @@ func GetLastProxies(tableName string, db *sql.DB) ([]string, int) {
 	proxies := []string{}
 	level := GetLastLevel(tableName, db)
 
-	var rows *sql.Rows
-	var err error
-	for {
-		rows, err = db.Query(fmt.Sprintf(
-			"SELECT ip, port FROM %s WHERE level=%d",
-			tableName,
-			level,
-		))
-		if err != nil {
-			log.Println(err)
-			time.Sleep(1 * time.Second)
-		} else {
-			break
-		}
+	rows, err := db.Query(fmt.Sprintf(
+		"SELECT ip, port FROM %s WHERE level=%d",
+		tableName,
+		level,
+	))
+	if err != nil {
+		log.Println(err)
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -78,29 +63,24 @@ func GetLastProxiesByDomain(tableName string, domain string, db *sql.DB) ([]stri
 	proxies := []string{}
 	level := GetLastLevel(tableName, db)
 
-	var rows *sql.Rows
 	var err error
-	for {
-		if domain == "" {
-			rows, err = db.Query(fmt.Sprintf(
-				"SELECT ip, port, domain FROM %s WHERE level=%d",
-				tableName,
-				level,
-			))
-		} else {
-			rows, err = db.Query(fmt.Sprintf(
-				"SELECT ip, port, domain FROM %s WHERE level=%d AND domain='%s'",
-				tableName,
-				level,
-				domain,
-			))
-		}
-		if err != nil {
-			log.Println(err)
-			time.Sleep(1 * time.Second)
-		} else {
-			break
-		}
+	var rows *sql.Rows
+	if domain == "" {
+		rows, err = db.Query(fmt.Sprintf(
+			"SELECT ip, port, domain FROM %s WHERE level=%d",
+			tableName,
+			level,
+		))
+	} else {
+		rows, err = db.Query(fmt.Sprintf(
+			"SELECT ip, port, domain FROM %s WHERE level=%d AND domain='%s'",
+			tableName,
+			level,
+			domain,
+		))
+	}
+	if err != nil {
+		log.Println(err)
 	}
 	defer rows.Close()
 	for rows.Next() {

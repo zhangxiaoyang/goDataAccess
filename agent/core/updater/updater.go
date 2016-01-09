@@ -29,7 +29,7 @@ func (this *Updater) Start() {
 	tableName := `"update"`
 
 	db, err := util.InitTable(fmt.Sprintf(
-		"CREATE TABLE IF NOT EXISTS %s(ip TEXT, port TEXT, source TEXT, level INTEGER)",
+		"PRAGMA journal_mode = WAL; CREATE TABLE IF NOT EXISTS %s(ip TEXT, port TEXT, source TEXT, level INTEGER)",
 		tableName,
 	), dbFilePath)
 	if err != nil {

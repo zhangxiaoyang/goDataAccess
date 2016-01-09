@@ -26,7 +26,7 @@ func NewServer(dbPath string, port int) *Server {
 	dbFilePath := path.Join(dbPath, "agent.db")
 	validateTableName := `"validate"`
 	db, err := util.InitTable(fmt.Sprintf(
-		"CREATE TABLE IF NOT EXISTS %s(ip TEXT, port TEXT, domain TEXT, level INTEGER)",
+		"PRAGMA journal_mode = WAL; CREATE TABLE IF NOT EXISTS %s(ip TEXT, port TEXT, domain TEXT, level INTEGER)",
 		validateTableName,
 	), dbFilePath)
 	if err != nil {
