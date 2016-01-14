@@ -128,9 +128,8 @@ If you want to combine agents with your spiders, you may need to learn [proxy_pl
 #### Usage
 ```
 cd goDataAccess/agent
-go run cli.go update # fetching free proxies
-go run cli.go validate 'http://m.baidu.com' 'baidu' # picking available proxies which can be used to visit 'http://m.baidu.com'. If response bodies from proxies do not contain 'baidu', proxies will not be picked.
-go run cli.go serve # RPC service at 127.0.0.1:1234
+go run run_agent.go & # fetching and validating free proxies
+go run run_server.go & # run http server at 127.0.0.1:1234 for spiders(use proxy_plugin to access agent)
 ```
 
 DA
