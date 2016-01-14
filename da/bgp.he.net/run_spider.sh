@@ -11,7 +11,7 @@ function init() {
     mkdir -p "$OUTPUT"
     mkdir -p "$LOG"
     mkdir -p "$DATA"
-    touch "$DATA/spider.log"
+    touch "$LOG/spider.log"
     touch "$DATA/output.txt"
     touch "$DATA/status.txt"
 
