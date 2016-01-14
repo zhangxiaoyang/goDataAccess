@@ -1,8 +1,14 @@
-goDataAccess
-===
+	         ___       _          _                   
+	 __ _ ___|   \ __ _| |_ __ _  /_\  __ __ ___ ______
+	/ _` / _ \ |) / _` |  _/ _` |/ _ \/ _/ _/ -_|_-<_-<
+	\__, \___/___/\__,_|\__\__,_/_/ \_\__\__\___/__/__/
+	|___/                                      
+
 goDataAccess is a data access framework implemented in native Golang(1.5+), which is designed to make the DA(data access) process easier and efficient.
 
 [中文文档](https://github.com/zhangxiaoyang/goDataAccess/wiki)
+
+Deploy goDataAccess with Docker: `docker pull zhangxiaoyang/godataaccess`
 
 Introduction
 ---
