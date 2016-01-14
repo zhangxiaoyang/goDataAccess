@@ -16,7 +16,7 @@
         "wait_time": "100ms",
         "download_timeout": "20s",
         "connection_timeout": "20s",
-        "concurrency": 500,
+        "concurrency": 1000,
         "max_retry_times": 20,
         "succ": "Domain Name:",
         "headers": {

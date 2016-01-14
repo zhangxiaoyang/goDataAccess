@@ -103,8 +103,10 @@ func (this *Server) getOneProxy(w http.ResponseWriter, r *http.Request) {
 	var result map[string]interface{}
 	if len(proxies) == 0 {
 		result = map[string]interface{}{
-			"num":    0,
-			"result": proxies,
+			"num":          0,
+			"level":        level,
+			"domain_match": domain,
+			"result":       proxies,
 		}
 	} else {
 		result = map[string]interface{}{

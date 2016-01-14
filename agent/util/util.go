@@ -67,9 +67,9 @@ func GetLastProxiesByDomain(tableName string, domain string, db *sql.DB) ([]stri
 	var rows *sql.Rows
 	if domain == "" {
 		rows, err = db.Query(fmt.Sprintf(
-			"SELECT ip, port, domain FROM %s WHERE level=%d",
+			"SELECT ip, port, domain FROM %s WHERE level>=%d",
 			tableName,
-			level,
+			level-1,
 		))
 	} else {
 		rows, err = db.Query(fmt.Sprintf(

@@ -1,9 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"crypto/md5"
 	"fmt"
-	"github.com/zhangxiaoyang/goDataAccess/da/util"
 	"github.com/zhangxiaoyang/goDataAccess/spider/common"
 	"github.com/zhangxiaoyang/goDataAccess/spider/core/engine"
 	"github.com/zhangxiaoyang/goDataAccess/spider/plugin"
@@ -20,8 +20,47 @@ import (
 var gAuth = &Auth{Jar: map[string]*cookiejar.Jar{}, IsAuthed: map[string]bool{}}
 var gConfig *common.Config
 
-func main() {
+func LoadAndDiff(inFilePath string, statusFilePath string) []string {
+	crawled := map[string]bool{}
+	domains := []string{}
+	{
+		file, _ := os.Open(statusFilePath)
+		defer file.Close()
 
+		r := bufio.NewReader(file)
+		for {
+			line, err := r.ReadString('\n')
+			if err != nil || err == io.EOF {
+				break
+			}
+			status := strings.Split(strings.TrimSpace(line), "\t")[0]
+			array := strings.Split(strings.TrimSpace(line), "/")
+			domain := array[len(array)-1]
+			if status == "succ" {
+				crawled[domain] = true
+			}
+		}
+	}
+	{
+		file, _ := os.Open(inFilePath)
+		defer file.Close()
+
+		r := bufio.NewReader(file)
+		for {
+			line, err := r.ReadString('\n')
+			if err != nil || err == io.EOF {
+				break
+			}
+			domain := strings.TrimSpace(line)
+			if _, ok := crawled[domain]; !ok {
+				domains = append(domains, domain)
+			}
+		}
+	}
+	return domains
+}
+
+func main() {
 	if len(os.Args) < 5 {
 		log.Printf("lost argument")
 		return
@@ -29,17 +68,18 @@ func main() {
 
 	configFilePath, inFilePath, outFilePath, statusFilePath, logFilePath :=
 		os.Args[1], os.Args[2], os.Args[3], os.Args[4], os.Args[5]
-	outFile, _ := os.Create(outFilePath)
+
+	domains := LoadAndDiff(inFilePath, statusFilePath)
+	log.Printf("load %d urls from %s", len(domains), inFilePath)
+
+	outFile, _ := os.OpenFile(outFilePath, os.O_RDWR|os.O_APPEND, 0660)
 	defer outFile.Close()
-	statusFile, _ := os.Create(statusFilePath)
+	statusFile, _ := os.OpenFile(statusFilePath, os.O_RDWR|os.O_APPEND, 0660)
 	defer statusFile.Close()
-	logFile, _ := os.Create(logFilePath)
+	logFile, _ := os.OpenFile(logFilePath, os.O_RDWR|os.O_APPEND, 0660)
 	defer logFile.Close()
 	log.SetOutput(io.MultiWriter(logFile, os.Stdout))
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
-	log.Printf("load urls from %s", inFilePath)
-	domains := util.LoadUrlsFromFile(inFilePath)
 
 	urls := []string{}
 	for _, domain := range domains {

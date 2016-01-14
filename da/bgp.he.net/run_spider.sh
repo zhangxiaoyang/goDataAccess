@@ -4,17 +4,16 @@ DATA="$BASEDIR/data"
 BIN="$BASEDIR/bin"
 OUTPUT="$BASEDIR/output"
 LOG="$BASEDIR/log"
-LIMIT=10000
 
 function init() {
-    ulimit -n 4000
+    ulimit -n 100000
 
-    rm -rf "$SPLIT"
-    rm -rf "$OUTPUT"
-    rm -rf "$LOG"
     mkdir -p "$OUTPUT"
     mkdir -p "$LOG"
     mkdir -p "$DATA"
+    touch "$DATA/spider.log"
+    touch "$DATA/output.txt"
+    touch "$DATA/status.txt"
 
     if [ ! -f "$DATA/top-1m.txt" ]
     then
