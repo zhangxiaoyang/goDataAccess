@@ -14,9 +14,9 @@
     "config": {
         "polling_time": "100ms",
         "wait_time": "100ms",
-        "download_timeout": "20s",
-        "connection_timeout": "20s",
-        "concurrency": 1000,
+        "download_timeout": "50s",
+        "connection_timeout": "50s",
+        "concurrency": 200,
         "max_retry_times": 20,
         "succ": "Domain Name:",
         "headers": {
