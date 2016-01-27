@@ -5,7 +5,13 @@ BIN="$BASEDIR/bin"
 OUTPUT="$BASEDIR/output"
 LOG="$BASEDIR/log"
 
-function init() {
+function logger()
+{
+    echo -e "`date '+%Y-%m-%d %H:%M:%S'` $1" >> "$2"
+}
+
+function init()
+{
     ulimit -n 100000
 
     mkdir -p "$OUTPUT"
@@ -24,12 +30,21 @@ EOM
     fi
 }
 
-function logger()
+function prepare()
 {
-    echo -e "`date '+%Y-%m-%d %H:%M:%S'` $1" >> "$2"
+    cd ../../agent
+    rm -r db/
+    go run run_agent.go &
+    logger "Started agent" "$LOG/run.log"
+
+    go run run_server.go &
+    logger "Started server" "$LOG/run.log"
+    cd -
 }
 
+prepare
 init
 logger "Started" "$LOG/run.log"
+sleep 15s
 go run "$BIN/spider.go" "$BIN/spider.json" "$DATA/top-1m.txt" "$OUTPUT/output.txt" "$OUTPUT/status.txt" "$LOG/spider.log"
 logger "Finished" "$LOG/run.log"
