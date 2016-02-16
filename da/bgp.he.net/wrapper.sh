@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 BASEDIR="`pwd`"
 LOG="$BASEDIR/log"
+mkdir -p "$LOG"
 
 while true
 do
