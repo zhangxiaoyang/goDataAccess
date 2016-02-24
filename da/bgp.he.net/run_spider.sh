@@ -42,9 +42,18 @@ function prepare()
     cd -
 }
 
+function wait_server()
+{
+    until [ "`curl --silent --show-error --connect-timeout 1 -I http://127.0.0.1:1234 | grep 'OK'`" != "" ];
+    do
+        echo "Waiting server"
+        sleep 10
+    done
+}
+
 prepare
 init
 logger "Started" "$LOG/run.log"
-sleep 15s
+wait_server
 go run "$BIN/spider.go" "$BIN/spider.json" "$DATA/top-1m.txt" "$OUTPUT/output.txt" "$OUTPUT/status.txt" "$LOG/spider.log"
 logger "Finished" "$LOG/run.log"
