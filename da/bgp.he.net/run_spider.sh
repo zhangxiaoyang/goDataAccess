@@ -34,9 +34,15 @@ function prepare()
 {
     cd ../../agent
     rm -r db/
+    
+    ps aux | grep run_agent | awk '{print $2}' | xargs kill -9
+    ps aux | grep run_server | awk '{print $2}' | xargs kill -9
+    
+    sleep 5s
     go run run_agent.go &
     logger "Started agent" "$LOG/run.log"
-
+    
+    sleep 1m
     go run run_server.go &
     logger "Started server" "$LOG/run.log"
     cd -
